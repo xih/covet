@@ -20,6 +20,7 @@
     "@trpc/react-query": "^10.37.1",
     "@trpc/server": "^10.37.1",
     "@types/mapbox-gl": "^2.7.14",
+    "deck.gl": "^8.9.30",
     "mapbox-gl": "^2.15.0",
     "next": "^13.4.19",
     "next-auth": "^4.23.0",
