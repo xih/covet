@@ -1,12 +1,16 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
-import Map from "react-map-gl";
-
 import { api } from "~/utils/api";
+import dynamic from "next/dynamic";
+
+const DeckMap = dynamic(() => import("~/components/DeckMap"), {
+  ssr: false,
+});
 
 export default function Home() {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
+  // console.log(data, "data");
 
   return (
     <>
@@ -16,40 +20,8 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="h-screen w-screen">
-        <Map
-          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          initialViewState={{
-            longitude: -122.4,
-            latitude: 37.8,
-            zoom: 14,
-          }}
-          mapStyle="mapbox://styles/mapbox/dark-v9"
-        />
+        <DeckMap />
       </main>
     </>
-  );
-}
-
-function AuthShowcase() {
-  const { data: sessionData } = useSession();
-
-  const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-    undefined, // no input
-    { enabled: sessionData?.user !== undefined },
-  );
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <p className="text-center text-2xl text-white">
-        {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-        {secretMessage && <span> - {secretMessage}</span>}
-      </p>
-      <button
-        className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-        onClick={sessionData ? () => void signOut() : () => void signIn()}
-      >
-        {sessionData ? "Sign out" : "Sign in"}
-      </button>
-    </div>
   );
 }
