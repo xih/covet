@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { api } from "~/utils/api";
 import dynamic from "next/dynamic";
+import KeplerMap from "~/components/KeplerMap";
 
 const DeckMap = dynamic(() => import("~/components/DeckMap"), {
   ssr: false,
@@ -21,6 +22,7 @@ export default function Home() {
       </Head>
       <main className="h-screen w-screen">
         <DeckMap />
+        {/* <KeplerMap /> */}
       </main>
     </>
   );

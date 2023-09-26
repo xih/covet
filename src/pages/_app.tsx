@@ -5,6 +5,9 @@ import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
+// import { Provider } from "react-redux";
+
+// import store from "../store/reducers";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -12,7 +15,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
+      {/* <Provider store={store}> */}
       <Component {...pageProps} />
+      {/* </Provider> */}
     </SessionProvider>
   );
 };

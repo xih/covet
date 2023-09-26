@@ -45,8 +45,8 @@ export default function DeckMap() {
       // getPosition: (d) => d.coordinates,
       getPosition: (d) => [d.lon, d.lat],
       getRadius: (d) => 1,
-      getFillColor: (d) => [255, 140, 0],
-      getLineColor: (d) => [0, 0, 0],
+      // getFillColor: (d) => [255, 140, 0],
+      // getLineColor: (d) => [0, 0, 0],
     }),
   ];
 
@@ -58,6 +58,9 @@ export default function DeckMap() {
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
         layers={layers}
+        // getTooltip={({ object }: { object: DataPoint | null }) =>
+        //   object && `${object.PropertyLocation}\n${object.grantor}`
+        // }
       >
         <Map
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
