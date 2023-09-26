@@ -8,14 +8,14 @@ import {
   ScatterplotLayer,
 } from "@deck.gl/layers/typed";
 
-import data from "../../public/final_properties_v1.json";
+import data from "../../public/final_properties_v1_1.json";
 
 type DataPoint = {
   block: number;
   lot: number;
   lat: number;
   lon: number;
-  PropertyLocation: string;
+  property_Location: string;
   grantor: string;
   grantee: string;
 };
@@ -58,9 +58,16 @@ export default function DeckMap() {
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
         layers={layers}
-        getTooltip={({ object }: { object?: DataPoint | null }) => ({
-          text: object ? `${object.PropertyLocation}\n${object.grantor}` : "",
-        })}
+        getTooltip={({ object }: { object?: DataPoint | null }) => {
+          console.log(object, "whats the object here");
+          return {
+            text: object
+              ? `Property Location: ${object.property_Location}
+              Grantor: ${object.grantor}
+              Grantee: ${object.grantee}`
+              : "",
+          };
+        }}
       >
         <Map
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
