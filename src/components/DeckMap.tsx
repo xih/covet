@@ -58,9 +58,9 @@ export default function DeckMap() {
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
         layers={layers}
-        // getTooltip={({ object }: { object: DataPoint | null }) =>
-        //   object && `${object.PropertyLocation}\n${object.grantor}`
-        // }
+        getTooltip={({ object }: { object?: DataPoint | null }) => ({
+          text: object ? `${object.PropertyLocation}\n${object.grantor}` : "",
+        })}
       >
         <Map
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
