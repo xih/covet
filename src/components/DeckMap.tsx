@@ -1,6 +1,7 @@
 import React from "react";
 import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
+import mixpanel from "mixpanel-browser";
 
 import {
   GeoJsonLayer,
@@ -60,6 +61,14 @@ export default function DeckMap() {
         layers={layers}
         getTooltip={({ object }: { object?: DataPoint | null }) => {
           console.log(object, "whats the object here");
+
+          if (object) {
+            mixpanel.track("click address", {
+              "Property name": object.property_Location,
+              Grantor: object.grantor,
+              Grantee: object.grantee,
+            });
+          }
           return {
             text: object
               ? `Property Location: ${object.property_Location}
