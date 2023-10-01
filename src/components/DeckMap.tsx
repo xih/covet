@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
@@ -31,6 +31,10 @@ export default function DeckMap() {
     bearing: 0,
   };
 
+  const [hoverInfo, setHoverInfo] = useState<DataPoint>();
+
+  console.log("changed!");
+
   const layers = [
     new ScatterplotLayer<DataPoint>({
       id: "scatterplot-layer",
@@ -48,46 +52,62 @@ export default function DeckMap() {
       getRadius: (d) => 1,
       // getFillColor: (d) => [255, 140, 0],
       // getLineColor: (d) => [0, 0, 0],
+      // onHover: (info) => setHoverInfo(info),
+      // onClick: (d) => {
+      //   return {
+      //     "hi"
+      //   }
+      // },
     }),
   ];
 
-  console.log(data);
-
   return (
-    <div className="h-screen w-screen">
-      <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
-        controller={true}
-        layers={layers}
-        getTooltip={({ object }: { object?: DataPoint | null }) => {
-          console.log(object, "whats the object here");
-
-          if (object) {
-            mixpanel.track("click address", {
-              "Property name": object.property_Location,
-              Grantor: object.grantor,
-              Grantee: object.grantee,
-            });
-          }
-          return {
-            text: object
-              ? `Property Location: ${object.property_Location}
+    // <div className="h-screen w-screen">
+    <DeckGL
+      initialViewState={INITIAL_VIEW_STATE}
+      controller={true}
+      layers={layers}
+      width={"100vw"}
+      height={"100vh"}
+      getTooltip={({ object }: { object?: DataPoint | null }) => {
+        if (object) {
+          mixpanel.track("click address", {
+            "Property name": object.property_Location,
+            Grantor: object.grantor,
+            Grantee: object.grantee,
+          });
+        }
+        return {
+          text: object
+            ? `Property Location: ${object.property_Location}
               Grantor: ${object.grantor}
               Grantee: ${object.grantee}`
-              : "",
-          };
+            : "",
+
+          // html: object
+          //   ? `<h2>${object.property_Location}</h2><div>${object.grantor}</div>`
+          //   : "",
+          // style: object
+          //   ? {
+          //       backgroundColor: "#00000",
+          //       fontSize: "0.8em",
+          //       display: "none",
+          //     }
+          //   : "",
+          // text: object ? "" : "",
+        };
+      }}
+    >
+      <Map
+        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+        initialViewState={{
+          longitude: -122.4,
+          latitude: 37.8,
+          zoom: 14,
         }}
-      >
-        <Map
-          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          initialViewState={{
-            longitude: -122.4,
-            latitude: 37.8,
-            zoom: 14,
-          }}
-          mapStyle="mapbox://styles/mapbox/dark-v9"
-        />
-      </DeckGL>
-    </div>
+        mapStyle="mapbox://styles/mapbox/dark-v9"
+      />
+    </DeckGL>
+    // </div>
   );
 }
