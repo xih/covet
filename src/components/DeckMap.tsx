@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
@@ -6,6 +6,7 @@ import mixpanel from "mixpanel-browser";
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
 
 import data from "../../public/final_properties_v1_1.json";
+import { Modal } from "~/shadcn/components/Modal";
 
 type DataPoint = {
   block: number;
@@ -58,30 +59,46 @@ const INITIAL_VIEW_STATE = {
 
 export default function DeckMap() {
   const layers = [ScatterPlayLayer];
+  const [metaData, setMetaData] = useState<DataPoint | undefined>();
+
+  const clearMetaData = () => {
+    setMetaData(undefined);
+  };
 
   return (
     <DeckGL
       initialViewState={INITIAL_VIEW_STATE}
+      style={{
+        height: "100vh",
+        width: "100vw",
+        position: "fixed",
+        overflow: "hidden",
+      }}
       controller={true}
       layers={layers}
-      width={"100vw"}
-      height={"100vh"}
-      getTooltip={({ object }: { object?: DataPoint | null }) => {
-        if (object) {
-          mixpanel.track("click address", {
-            "Property name": object.property_Location,
-            Grantor: object.grantor,
-            Grantee: object.grantee,
-          });
+      onClick={(data) => {
+        if (!data) {
+          return;
         }
-        return {
-          text: object
-            ? `Property Location: ${object.property_Location}
-              Grantor: ${object.grantor}
-              Grantee: ${object.grantee}`
-            : "",
-        };
+
+        const pointMetaData = data.object as DataPoint;
+        mixpanel.track("click address", {
+          "Property name": pointMetaData?.property_Location,
+          Grantor: pointMetaData?.grantor,
+          Grantee: pointMetaData?.grantee,
+        });
+        setMetaData(pointMetaData);
       }}
+      // need to play with transition easing
+      // viewState={
+      //   metaData && {
+      //     latitude: metaData?.lat,
+      //     longitude: metaData?.lon,
+      //     zoom: 16,
+      //     pitch: 0,
+      //     bearing: 0,
+      //   }
+      // }
     >
       <Map
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
@@ -92,6 +109,16 @@ export default function DeckMap() {
         }}
         mapStyle={"mapbox://styles/mapbox/dark-v11"}
       />
+      {metaData && (
+        <Modal
+          location={metaData?.property_Location}
+          grantee={metaData?.grantee}
+          grantor={metaData?.grantor}
+          lat={metaData?.lat}
+          lon={metaData?.lon}
+          close={clearMetaData}
+        />
+      )}
     </DeckGL>
   );
 }
