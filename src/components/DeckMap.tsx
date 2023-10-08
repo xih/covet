@@ -46,6 +46,12 @@ const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
 
     return [225, 195, 2];
   },
+  onHover: (d) => {
+    console.log(d.color);
+  },
+  onClick: (d) => {
+    console.log(d.color);
+  },
 });
 
 // Viewport settings
@@ -73,6 +79,15 @@ export default function DeckMap() {
         width: "100vw",
         position: "fixed",
         overflow: "hidden",
+      }}
+      getTooltip={({ object }: { object?: DataPoint | null }) => {
+        return {
+          text: object
+            ? `Property Location: ${object.property_Location}
+              Grantor: ${object.grantor}
+              Grantee: ${object.grantee}`
+            : "",
+        };
       }}
       controller={true}
       layers={layers}
