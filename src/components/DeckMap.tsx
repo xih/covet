@@ -18,42 +18,6 @@ type DataPoint = {
   grantee: string;
 };
 
-const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
-  id: "scatterplot-layer",
-  data: data as DataPoint[],
-  pickable: true,
-  opacity: 0.8,
-  filled: true,
-  radiusScale: 10,
-  radiusMinPixels: 1,
-  radiusMaxPixels: 100,
-  lineWidthMinPixels: 0,
-  getPosition: (d) => [d.lon, d.lat],
-  getRadius: () => 1,
-  getFillColor: (d) => {
-    const value = d.block;
-    if (value <= 1184) {
-      return [90, 24, 70];
-    } else if (value > 1184 && value <= 2116) {
-      return [114, 12, 63];
-    } else if (value > 2116 && value <= 3156) {
-      return [199, 1, 56];
-    } else if (value > 3156 && value <= 4283) {
-      return [227, 97, 27];
-    } else if (value > 4283 && value <= 6438) {
-      return [241, 146, 14];
-    }
-
-    return [225, 195, 2];
-  },
-  onHover: (d) => {
-    console.log(d.color);
-  },
-  onClick: (d) => {
-    console.log(d.color);
-  },
-});
-
 // Viewport settings
 const INITIAL_VIEW_STATE = {
   longitude: -122.41669,
@@ -64,8 +28,70 @@ const INITIAL_VIEW_STATE = {
 };
 
 export default function DeckMap() {
+  const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
+    id: "scatterplot-layer",
+    data: data as DataPoint[],
+    pickable: true,
+    opacity: 0.8,
+    filled: true,
+    radiusScale: 10,
+    radiusMinPixels: 1,
+    radiusMaxPixels: 100,
+    lineWidthMinPixels: 0,
+    getPosition: (d) => [d.lon, d.lat],
+    getRadius: () => 1,
+    getFillColor: (d) => {
+      const value = d.block;
+      if (value <= 1184) {
+        if (hoveredObject && hoveredObject === d) {
+          return [100, 24, 70];
+        }
+        return [90, 24, 70];
+      } else if (value > 1184 && value <= 2116) {
+        if (hoveredObject && hoveredObject === d) {
+          return [115, 24, 70];
+        }
+        return [114, 12, 63];
+      } else if (value > 2116 && value <= 3156) {
+        if (hoveredObject && hoveredObject === d) {
+          return [205, 1, 56];
+        }
+        return [199, 1, 56];
+      } else if (value > 3156 && value <= 4283) {
+        if (hoveredObject && hoveredObject === d) {
+          return [232, 97, 27];
+        }
+        return [227, 97, 27];
+      } else if (value > 4283 && value <= 6438) {
+        if (hoveredObject && hoveredObject === d) {
+          return [246, 146, 14];
+        }
+        return [241, 146, 14];
+      }
+
+      return [225, 195, 2];
+    },
+    // onHover: (d) => {
+    //   console.log(d.color);
+    // },
+    onHover: ({ object }: { object?: DataPoint | null }) => {
+      //@ts-ignore remove any
+      setHoveredObject(object);
+      console.log("is it hovered?");
+      console.log(hoveredObject);
+      setHovered(true);
+    },
+    onClick: (d) => {
+      console.log(d.color);
+      // d.color = "#aaaaaak";
+    },
+    autoHighlight: true,
+  });
+
   const layers = [ScatterPlayLayer];
   const [metaData, setMetaData] = useState<DataPoint | undefined>();
+  const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
+  const [hovered, setHovered] = useState(false);
 
   const clearMetaData = () => {
     setMetaData(undefined);

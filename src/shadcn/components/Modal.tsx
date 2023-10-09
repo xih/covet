@@ -1,3 +1,6 @@
+import mixpanel from "mixpanel-browser";
+import Link from "next/link";
+import { Button } from "~/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -38,7 +41,7 @@ export const Modal = (props: ModalProps) => {
           <SheetTitle className="text-left"> {prettyLocation2}</SheetTitle>
           <SheetDescription className="text-left">
             <p>
-              Owner{" "}
+              Grantee:{" "}
               <span className="font-medium text-slate-900">{grantee}</span>
             </p>
             {/* <br /> */}
@@ -51,6 +54,24 @@ export const Modal = (props: ModalProps) => {
             <p>
               Coordinates: {lat},{lon}
             </p>
+            <br />
+            <Link
+              href={`https://www.google.com/search?q=${grantee}`}
+              target="_blank"
+              // add mixpanel event here:
+            >
+              <Button
+                onClick={() => {
+                  mixpanel.track("searched on google", {
+                    "Property name": location,
+                    Grantor: grantor,
+                    Grantee: grantee,
+                  });
+                }}
+              >
+                Who is {grantee}?
+              </Button>
+            </Link>
           </SheetDescription>
         </SheetHeader>
       </SheetContent>
