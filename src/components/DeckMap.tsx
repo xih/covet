@@ -5,7 +5,7 @@ import mixpanel from "mixpanel-browser";
 
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
 
-import data from "../../public/final_properties_v1_1.json";
+import data from "../../public/final_properties_v1_2.json";
 import { Modal } from "~/shadcn/components/Modal";
 
 type DataPoint = {
@@ -13,7 +13,7 @@ type DataPoint = {
   lot: number;
   lat: number;
   lon: number;
-  property_Location: string;
+  propertyLocation: string;
   grantor: string;
   grantee: string;
 };
@@ -28,6 +28,11 @@ const INITIAL_VIEW_STATE = {
 };
 
 export default function DeckMap() {
+  const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
+  const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
+  const [hovered, setHovered] = useState(false);
+  const [drawerOpened, setDrawerOpened] = useState(false);
+
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
     data: data as DataPoint[],
@@ -40,8 +45,11 @@ export default function DeckMap() {
     lineWidthMinPixels: 0,
     getPosition: (d) => [d.lon, d.lat],
     getRadius: () => 1,
-    getFillColor: (d) => {
+    getFillColor: (d, context) => {
       const value = d.block;
+      if (selectedIndex !== undefined && context.index === selectedIndex) {
+        return [255, 255, 204];
+      }
       if (value <= 1184) {
         if (hoveredObject && hoveredObject === d) {
           return [100, 24, 70];
@@ -77,25 +85,26 @@ export default function DeckMap() {
     onHover: ({ object }: { object?: DataPoint | null }) => {
       //@ts-ignore remove any
       setHoveredObject(object);
-      console.log("is it hovered?");
-      console.log(hoveredObject);
+      // console.log("is it hovered?");
+      // console.log(hoveredObject);
       setHovered(true);
     },
     onClick: (d) => {
       console.log(d.color);
       // d.color = "#aaaaaak";
     },
+    updateTriggers: {
+      getFillColor: [selectedIndex],
+    },
+    // highlightedObjectIndex: selectedIndex,
     autoHighlight: true,
   });
 
   const layers = [ScatterPlayLayer];
-  const [metaData, setMetaData] = useState<DataPoint | undefined>();
-  const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
-  const [hovered, setHovered] = useState(false);
-
-  const clearMetaData = () => {
-    setMetaData(undefined);
-  };
+  const metaData =
+    selectedIndex !== undefined
+      ? (data as DataPoint[])[selectedIndex]
+      : undefined;
 
   return (
     <DeckGL
@@ -107,28 +116,34 @@ export default function DeckMap() {
         overflow: "hidden",
       }}
       getTooltip={({ object }: { object?: DataPoint | null }) => {
-        return {
-          text: object
-            ? `Property Location: ${object.property_Location}
+        return object
+          ? {
+              text: `Property Location: ${object.propertyLocation}
               Grantor: ${object.grantor}
-              Grantee: ${object.grantee}`
-            : "",
-        };
+              Grantee: ${object.grantee}`,
+            }
+          : null;
       }}
       controller={true}
       layers={layers}
       onClick={(data) => {
+        console.log("click", data);
+
         if (!data) {
+          setDrawerOpened(false);
           return;
         }
 
         const pointMetaData = data.object as DataPoint;
         mixpanel.track("click address", {
-          "Property name": pointMetaData?.property_Location,
+          "Property name": pointMetaData?.propertyLocation,
           Grantor: pointMetaData?.grantor,
           Grantee: pointMetaData?.grantee,
         });
-        setMetaData(pointMetaData);
+
+        // console.log("does this click work");
+        setSelectedIndex(data.index);
+        setDrawerOpened(true);
       }}
       // need to play with transition easing
       // viewState={
@@ -150,16 +165,18 @@ export default function DeckMap() {
         }}
         mapStyle={"mapbox://styles/mapbox/dark-v11"}
       />
-      {metaData && (
-        <Modal
-          location={metaData?.property_Location}
-          grantee={metaData?.grantee}
-          grantor={metaData?.grantor}
-          lat={metaData?.lat}
-          lon={metaData?.lon}
-          close={clearMetaData}
-        />
-      )}
+      <Modal
+        location={metaData?.propertyLocation}
+        grantee={metaData?.grantee}
+        grantor={metaData?.grantor}
+        lat={metaData?.lat}
+        lon={metaData?.lon}
+        onOpenChange={(open) => {
+          console.log("change", open);
+          setSelectedIndex(undefined);
+        }}
+        isOpen={metaData !== undefined}
+      />
     </DeckGL>
   );
 }

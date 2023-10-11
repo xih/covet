@@ -11,12 +11,14 @@ import {
 } from "~/components/ui/sheet";
 
 export type ModalProps = {
+  isOpen: boolean;
   location?: string;
   grantor?: string;
   grantee?: string;
   lat?: number;
   lon?: number;
-  close?: () => void;
+  onOpenChange: (open: boolean) => void;
+  // drawerOpened: boolean;
 };
 
 // //@ts-ignore-3 adf
@@ -27,16 +29,15 @@ export type ModalProps = {
 // }
 
 export const Modal = (props: ModalProps) => {
-  const { location, grantor, grantee, lat, lon, close } = props;
+  const { location, grantor, grantee, lat, lon, onOpenChange, isOpen } = props;
 
   // pretty print the location
   const prettyLocation = location?.replace(/['"]+/g, ""); // remove quotes
   const prettyLocation2 = prettyLocation?.replace(/[0+]/g, "");
 
   return (
-    <Sheet open={Boolean(props)} onOpenChange={close}>
-      <SheetClose onClick={close} />
-      <SheetContent side={"bottom"}>
+    <Sheet open={isOpen} modal={false}>
+      <SheetContent side={window.innerWidth > 800 ? "right" : "bottom"}>
         <SheetHeader>
           <SheetTitle className="text-left"> {prettyLocation2}</SheetTitle>
           <SheetDescription className="text-left">
