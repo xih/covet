@@ -18,6 +18,8 @@ type DataPoint = {
   grantee: string;
 };
 
+type CleanedDataPoint = DataPoint & { prettyLocation: string };
+
 // Viewport settings
 const INITIAL_VIEW_STATE = {
   longitude: -122.41669,
@@ -27,6 +29,8 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 };
 
+const cleanedData = cleanData(data as DataPoint[]);
+
 export default function DeckMap() {
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
@@ -35,7 +39,7 @@ export default function DeckMap() {
 
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
-    data: data as DataPoint[],
+    data: cleanedData,
     pickable: true,
     opacity: 0.8,
     filled: true,
@@ -79,20 +83,6 @@ export default function DeckMap() {
 
       return [225, 195, 2];
     },
-    // onHover: (d) => {
-    //   console.log(d.color);
-    // },
-    onHover: ({ object }: { object?: DataPoint | null }) => {
-      //@ts-ignore remove any
-      setHoveredObject(object);
-      // console.log("is it hovered?");
-      // console.log(hoveredObject);
-      setHovered(true);
-    },
-    onClick: (d) => {
-      console.log(d.color);
-      // d.color = "#aaaaaak";
-    },
     updateTriggers: {
       getFillColor: [selectedIndex],
     },
@@ -115,10 +105,10 @@ export default function DeckMap() {
         position: "fixed",
         overflow: "hidden",
       }}
-      getTooltip={({ object }: { object?: DataPoint | null }) => {
+      getTooltip={({ object }: { object?: CleanedDataPoint | null }) => {
         return object
           ? {
-              text: `Property Location: ${object.propertyLocation}
+              text: `Property Location: ${object.prettyLocation}
               Grantor: ${object.grantor}
               Grantee: ${object.grantee}`,
             }
@@ -179,4 +169,23 @@ export default function DeckMap() {
       />
     </DeckGL>
   );
+}
+
+function cleanData(data: DataPoint[]) {
+  return data.map<CleanedDataPoint>((d) => {
+    const first = d.propertyLocation.slice(0, 4);
+    const middle = d.propertyLocation.slice(4, -4);
+    const last = d.propertyLocation.slice(-4);
+
+    const prettyLocation = [
+      first.replace(/^0+/, ""),
+      middle.trim().replace(/^0+/, ""),
+      last.replace(/^0+/, ""),
+    ].join(" ");
+
+    return {
+      ...d,
+      prettyLocation,
+    };
+  });
 }
