@@ -130,21 +130,9 @@ export default function DeckMap() {
           Grantor: pointMetaData?.grantor,
           Grantee: pointMetaData?.grantee,
         });
-
-        // console.log("does this click work");
         setSelectedIndex(data.index);
         setDrawerOpened(true);
       }}
-      // need to play with transition easing
-      // viewState={
-      //   metaData && {
-      //     latitude: metaData?.lat,
-      //     longitude: metaData?.lon,
-      //     zoom: 16,
-      //     pitch: 0,
-      //     bearing: 0,
-      //   }
-      // }
     >
       <Map
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
@@ -162,7 +150,6 @@ export default function DeckMap() {
         lat={metaData?.lat}
         lon={metaData?.lon}
         onOpenChange={(open) => {
-          console.log("change", open);
           setSelectedIndex(undefined);
         }}
         isOpen={metaData !== undefined}

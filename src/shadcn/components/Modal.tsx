@@ -59,13 +59,18 @@ export const Modal = (props: ModalProps) => {
               Grantee:{" "}
               <span className="font-medium text-slate-900">
                 {grantee?.split(",").map((name) => (
-                  <p key={name}>
+                  <p key={name} className="underline">
                     <Link
                       href={`https://www.google.com/search?q=${encodeURIComponent(
                         name,
                       )}`}
                       target="_blank"
-                      // add mixpanel event here:
+                      onClick={() => {
+                        mixpanel.track("searched on google", {
+                          type: "grantee",
+                          name: name,
+                        });
+                      }}
                     >
                       {name}
                     </Link>
@@ -73,19 +78,25 @@ export const Modal = (props: ModalProps) => {
                 ))}
               </span>
             </p>
-            {/* <br /> */}
+            <br />
 
             <p>
               Grantor:{" "}
               <span className="font-medium text-slate-900">
                 {grantor?.split(",").map((name) => {
                   return (
-                    <p key={name}>
+                    <p key={name} className="underline">
                       <Link
                         href={`https://www.google.com/search?q=${encodeURIComponent(
                           name,
                         )}`}
                         target="_blank"
+                        onClick={() => {
+                          mixpanel.track("searched on google", {
+                            type: "grantor",
+                            name: name,
+                          });
+                        }}
                         // add mixpanel event here:
                       >
                         {name}
@@ -95,12 +106,17 @@ export const Modal = (props: ModalProps) => {
                 })}
               </span>{" "}
             </p>
+            <br />
 
             <p>
-              Coordinates: {lat},{lon}
+              Coordinates:
+              <br />
+              <span className="font-medium text-slate-900">
+                {lat},{lon}
+              </span>
             </p>
             <br />
-            <Link
+            {/* <Link
               href={`https://www.google.com/search?q=${grantee}`}
               target="_blank"
               // add mixpanel event here:
@@ -116,7 +132,7 @@ export const Modal = (props: ModalProps) => {
               >
                 Who is {grantee}?
               </Button>
-            </Link>
+            </Link> */}
           </SheetDescription>
         </SheetHeader>
       </SheetContent>
