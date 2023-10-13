@@ -29,34 +29,94 @@ export type ModalProps = {
 // }
 
 export const Modal = (props: ModalProps) => {
-  const { location, grantor, grantee, lat, lon, onOpenChange, isOpen } = props;
+  const {
+    location = "",
+    grantor,
+    grantee,
+    lat,
+    lon,
+    onOpenChange,
+    isOpen,
+  } = props;
 
-  // pretty print the location
-  const prettyLocation = location?.replace(/['"]+/g, ""); // remove quotes
-  const prettyLocation2 = prettyLocation?.replace(/[0+]/g, "");
+  const first = location.slice(0, 4);
+  const middle = location.slice(4, -4);
+  const last = location.slice(-4);
+
+  const prettyLocation = [
+    first.replace(/^0+/, ""),
+    middle.trim().replace(/^0+/, ""),
+    last.replace(/^0+/, ""),
+  ].join(" ");
 
   return (
     <Sheet open={isOpen} modal={false}>
       <SheetContent side={window.innerWidth > 800 ? "right" : "bottom"}>
         <SheetHeader>
-          <SheetTitle className="text-left"> {prettyLocation2}</SheetTitle>
+          <SheetTitle className="text-left"> {prettyLocation}</SheetTitle>
           <SheetDescription className="text-left">
             <p>
               Grantee:{" "}
-              <span className="font-medium text-slate-900">{grantee}</span>
+              <span className="font-medium text-slate-900">
+                {grantee?.split(",").map((name) => (
+                  <p key={name} className="underline">
+                    <Link
+                      href={`https://www.google.com/search?q=${encodeURIComponent(
+                        name,
+                      )}`}
+                      target="_blank"
+                      onClick={() => {
+                        mixpanel.track("searched on google", {
+                          type: "grantee",
+                          name: name,
+                        });
+                      }}
+                    >
+                      {name}
+                    </Link>
+                  </p>
+                ))}
+              </span>
             </p>
-            {/* <br /> */}
+            <br />
 
             <p>
               Grantor:{" "}
-              <span className="font-medium text-slate-900">{grantor}</span>{" "}
-            </p>
-
-            <p>
-              Coordinates: {lat},{lon}
+              <span className="font-medium text-slate-900">
+                {grantor?.split(",").map((name) => {
+                  return (
+                    <p key={name} className="underline">
+                      <Link
+                        href={`https://www.google.com/search?q=${encodeURIComponent(
+                          name,
+                        )}`}
+                        target="_blank"
+                        onClick={() => {
+                          mixpanel.track("searched on google", {
+                            type: "grantor",
+                            name: name,
+                          });
+                        }}
+                        // add mixpanel event here:
+                      >
+                        {name}
+                      </Link>
+                    </p>
+                  );
+                })}
+              </span>{" "}
             </p>
             <br />
-            <Link
+
+            <p>
+              Coordinates:
+              <br />
+              <span className="font-medium text-slate-900">
+                {lat},{lon}
+              </span>
+            </p>
+            <br />
+            {/* <Link
               href={`https://www.google.com/search?q=${grantee}`}
               target="_blank"
               // add mixpanel event here:
@@ -72,7 +132,7 @@ export const Modal = (props: ModalProps) => {
               >
                 Who is {grantee}?
               </Button>
-            </Link>
+            </Link> */}
           </SheetDescription>
         </SheetHeader>
       </SheetContent>
