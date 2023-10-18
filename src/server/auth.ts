@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import mixpanel from "mixpanel-browser";
 import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,
@@ -67,6 +68,22 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
+  events: {
+    signIn(message) {
+      const { user } = message;
+
+      mixpanel.init(env.NEXT_PUBLIC_MIXPANEL_TOKEN, { debug: true });
+      mixpanel.track("Sign In");
+      console.log("sign in");
+      console.log(message);
+
+      mixpanel.people.set(user.id, {
+        $name: user.name,
+        $email: user.email,
+        $created: new Date().toISOString(),
+      });
+    },
+  },
 };
 
 /**
