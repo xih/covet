@@ -1,5 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import mixpanel from "mixpanel-browser";
+import Mixpanel from "mixpanel";
 import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,
@@ -11,6 +11,8 @@ import GoogleProvider from "next-auth/providers/google";
 
 import { env } from "~/env.mjs";
 import { db } from "~/server/db";
+
+const mixpanel = Mixpanel.init(env.NEXT_PUBLIC_MIXPANEL_TOKEN, { debug: true });
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -72,7 +74,6 @@ export const authOptions: NextAuthOptions = {
     signIn(message) {
       const { user } = message;
 
-      mixpanel.init(env.NEXT_PUBLIC_MIXPANEL_TOKEN, { debug: true });
       mixpanel.track("Sign In");
       console.log("sign in");
       console.log(message);
