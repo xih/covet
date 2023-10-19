@@ -7,6 +7,7 @@ import { ScatterplotLayer } from "@deck.gl/layers/typed";
 
 import data from "../../public/final_properties_v1_2.json";
 import { Modal } from "~/shadcn/components/Modal";
+import { Input } from "~/components/ui/input";
 
 type DataPoint = {
   block: number;
@@ -32,18 +33,27 @@ const INITIAL_VIEW_STATE = {
 const cleanedData = cleanData(data as DataPoint[]);
 
 export default function DeckMap() {
+  const [searchValue, setSearchValue] = useState("");
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
-  const [hovered, setHovered] = useState(false);
-  const [drawerOpened, setDrawerOpened] = useState(false);
+
+  const searchValueLower = searchValue.toLowerCase();
+
+  const data = searchValue
+    ? cleanedData.filter(
+        (x) =>
+          x.grantee.toLowerCase().includes(searchValueLower) ||
+          x.grantor.toLowerCase().includes(searchValueLower),
+      )
+    : cleanedData;
 
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
-    data: cleanedData,
+    data: data,
     pickable: true,
     opacity: 0.8,
     filled: true,
-    radiusScale: 10,
+    radiusScale: data.length > 100000 ? 5 : data.length > 10000 ? 10 : 20,
     radiusMinPixels: 1,
     radiusMaxPixels: 100,
     lineWidthMinPixels: 0,
@@ -97,52 +107,65 @@ export default function DeckMap() {
       : undefined;
 
   return (
-    <DeckGL
-      initialViewState={INITIAL_VIEW_STATE}
-      style={{
-        height: "100vh",
-        width: "100vw",
-        position: "fixed",
-        overflow: "hidden",
-      }}
-      getTooltip={({ object }: { object?: CleanedDataPoint | null }) => {
-        return object
-          ? {
-              text: `Property Location: ${object.prettyLocation}
+    <>
+      <DeckGL
+        initialViewState={INITIAL_VIEW_STATE}
+        style={{
+          height: "100vh",
+          width: "100vw",
+          position: "fixed",
+          overflow: "hidden",
+        }}
+        getTooltip={({ object }: { object?: CleanedDataPoint | null }) => {
+          return object
+            ? {
+                text: `Property Location: ${object.prettyLocation}
               Grantor: ${object.grantor}
               Grantee: ${object.grantee}`,
-            }
-          : null;
-      }}
-      controller={true}
-      layers={layers}
-      onClick={(data) => {
-        console.log("click", data);
-
-        if (!data) {
-          setDrawerOpened(false);
-          return;
-        }
-
-        const pointMetaData = data.object as DataPoint;
-        mixpanel.track("click address", {
-          "Property name": pointMetaData?.propertyLocation,
-          Grantor: pointMetaData?.grantor,
-          Grantee: pointMetaData?.grantee,
-        });
-        setSelectedIndex(data.index);
-        setDrawerOpened(true);
-      }}
-    >
-      <Map
-        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-        initialViewState={{
-          longitude: -122.4,
-          latitude: 37.8,
-          zoom: 14,
+              }
+            : null;
         }}
-        mapStyle={"mapbox://styles/mapbox/dark-v11"}
-      />
+        controller={true}
+        layers={layers}
+        onClick={(data) => {
+          console.log("click", data);
+
+          if (data.index === -1) return;
+
+          const pointMetaData = data.object as DataPoint;
+          mixpanel.track("click address", {
+            "Property name": pointMetaData?.propertyLocation,
+            Grantor: pointMetaData?.grantor,
+            Grantee: pointMetaData?.grantee,
+          });
+          setSelectedIndex(data.index);
+        }}
+      >
+        <Map
+          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+          initialViewState={{
+            longitude: -122.4,
+            latitude: 37.8,
+            zoom: 14,
+          }}
+          mapStyle={"mapbox://styles/mapbox/dark-v11"}
+        />
+      </DeckGL>
+
+      <div className="absolute left-8 top-8">
+        <Input
+          value={searchValue}
+          onChange={(e) => {
+            setSearchValue(e.target.value);
+            setSelectedIndex(undefined);
+          }}
+          placeholder="Search by name"
+        />
+        <div className="absolute left-full top-0 flex h-full items-center justify-center whitespace-nowrap p-2 text-white">
+          ({data.length} results)
+        </div>
+      </div>
+
       <Modal
         location={metaData?.propertyLocation}
         grantee={metaData?.grantee}
@@ -154,7 +177,7 @@ export default function DeckMap() {
         }}
         isOpen={metaData !== undefined}
       />
-    </DeckGL>
+    </>
   );
 }
 

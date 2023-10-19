@@ -8,15 +8,13 @@ import mixpanel from "mixpanel-browser";
 import { AlertDialogDemo } from "~/shadcn/components/AlertDialogDemo";
 import { Button } from "~/components/ui/button";
 import UserAuth from "~/components/ui/UserAuth";
+import { useState } from "react";
 
 const DeckMap = dynamic(() => import("~/components/DeckMap"), {
   ssr: false,
 });
 
 export default function Home() {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
-  // console.log(data, "data");
-
   mixpanel.init(process.env.NEXT_PUBLIC_MIXPANEL_TOKEN!, {
     debug: true,
     track_pageview: true,
