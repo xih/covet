@@ -28,6 +28,10 @@ const config = {
       "error",
       { "ts-ignore": "allow-with-description" },
     ],
+    "@typescript-eslint/no-empty-interface": [
+      "error",
+      { allowSingleExtends: true },
+    ],
   },
 };
 
