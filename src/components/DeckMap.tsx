@@ -128,8 +128,6 @@ export default function DeckMap() {
         controller={true}
         layers={layers}
         onClick={(data) => {
-          console.log("click", data);
-
           if (data.index === -1) return;
 
           const pointMetaData = data.object as DataPoint;
@@ -150,8 +148,18 @@ export default function DeckMap() {
           }}
           mapStyle={"mapbox://styles/mapbox/dark-v11"}
         />
+        <Modal
+          location={metaData?.propertyLocation}
+          grantee={metaData?.grantee}
+          grantor={metaData?.grantor}
+          lat={metaData?.lat}
+          lon={metaData?.lon}
+          onOpenChange={(open) => {
+            setSelectedIndex(undefined);
+          }}
+          isOpen={metaData !== undefined}
+        />
       </DeckGL>
-
       <div className="absolute left-8 top-8">
         <Input
           value={searchValue}
@@ -165,18 +173,6 @@ export default function DeckMap() {
           ({data.length} results)
         </div>
       </div>
-
-      <Modal
-        location={metaData?.propertyLocation}
-        grantee={metaData?.grantee}
-        grantor={metaData?.grantor}
-        lat={metaData?.lat}
-        lon={metaData?.lon}
-        onOpenChange={(open) => {
-          setSelectedIndex(undefined);
-        }}
-        isOpen={metaData !== undefined}
-      />
     </>
   );
 }
