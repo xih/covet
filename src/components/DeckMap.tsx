@@ -7,6 +7,11 @@ import { ScatterplotLayer } from "@deck.gl/layers/typed";
 
 import data from "../../public/final_properties_v1_2.json";
 import { Modal } from "~/shadcn/components/Modal";
+import { Input } from "~/components/ui/input";
+import PostCovetLogo from "/public/Post-Covet_LOGO_SVG.svg";
+import Image from "next/image";
+
+// import { ReactComponent as PostCovetLogo } from "/public/Post-Covet_LOGO_SVG.svg";
 
 type DataPoint = {
   block: number;
@@ -32,18 +37,27 @@ const INITIAL_VIEW_STATE = {
 const cleanedData = cleanData(data as DataPoint[]);
 
 export default function DeckMap() {
+  const [searchValue, setSearchValue] = useState("");
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
-  const [hovered, setHovered] = useState(false);
-  const [drawerOpened, setDrawerOpened] = useState(false);
+
+  const searchValueLower = searchValue.toLowerCase();
+
+  const data = searchValue
+    ? cleanedData.filter(
+        (x) =>
+          x.grantee.toLowerCase().includes(searchValueLower) ||
+          x.grantor.toLowerCase().includes(searchValueLower),
+      )
+    : cleanedData;
 
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
-    data: cleanedData,
+    data: data,
     pickable: true,
     opacity: 0.8,
     filled: true,
-    radiusScale: 10,
+    radiusScale: data.length > 100000 ? 5 : data.length > 10000 ? 10 : 20,
     radiusMinPixels: 1,
     radiusMaxPixels: 100,
     lineWidthMinPixels: 0,
@@ -97,64 +111,86 @@ export default function DeckMap() {
       : undefined;
 
   return (
-    <DeckGL
-      initialViewState={INITIAL_VIEW_STATE}
-      style={{
-        height: "100vh",
-        width: "100vw",
-        position: "fixed",
-        overflow: "hidden",
-      }}
-      getTooltip={({ object }: { object?: CleanedDataPoint | null }) => {
-        return object
-          ? {
-              text: `Property Location: ${object.prettyLocation}
+    <>
+      <DeckGL
+        initialViewState={INITIAL_VIEW_STATE}
+        style={{
+          height: "100vh",
+          width: "100vw",
+          position: "fixed",
+          overflow: "hidden",
+        }}
+        getTooltip={({ object }: { object?: CleanedDataPoint | null }) => {
+          return object
+            ? {
+                text: `Property Location: ${object.prettyLocation}
               Grantor: ${object.grantor}
               Grantee: ${object.grantee}`,
-            }
-          : null;
-      }}
-      controller={true}
-      layers={layers}
-      onClick={(data) => {
-        console.log("click", data);
-
-        if (!data) {
-          setDrawerOpened(false);
-          return;
-        }
-
-        const pointMetaData = data.object as DataPoint;
-        mixpanel.track("click address", {
-          "Property name": pointMetaData?.propertyLocation,
-          Grantor: pointMetaData?.grantor,
-          Grantee: pointMetaData?.grantee,
-        });
-        setSelectedIndex(data.index);
-        setDrawerOpened(true);
-      }}
-    >
-      <Map
-        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-        initialViewState={{
-          longitude: -122.4,
-          latitude: 37.8,
-          zoom: 14,
+              }
+            : null;
         }}
-        mapStyle={"mapbox://styles/mapbox/dark-v11"}
-      />
-      <Modal
-        location={metaData?.propertyLocation}
-        grantee={metaData?.grantee}
-        grantor={metaData?.grantor}
-        lat={metaData?.lat}
-        lon={metaData?.lon}
-        onOpenChange={(open) => {
-          setSelectedIndex(undefined);
+        controller={true}
+        layers={layers}
+        onClick={(data) => {
+          if (!data.layer) {
+            setSelectedIndex(-1);
+            return;
+          }
+
+          if (data.index === -1) return;
+
+          const pointMetaData = data.object as DataPoint;
+          mixpanel.track("click address", {
+            "Property name": pointMetaData?.propertyLocation,
+            Grantor: pointMetaData?.grantor,
+            Grantee: pointMetaData?.grantee,
+          });
+          setSelectedIndex(data.index);
         }}
-        isOpen={metaData !== undefined}
-      />
-    </DeckGL>
+      >
+        <Map
+          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+          initialViewState={{
+            longitude: -122.4,
+            latitude: 37.8,
+            zoom: 14,
+          }}
+          mapStyle={"mapbox://styles/mapbox/dark-v11"}
+        />
+        <Modal
+          location={metaData?.propertyLocation}
+          grantee={metaData?.grantee}
+          grantor={metaData?.grantor}
+          lat={metaData?.lat}
+          lon={metaData?.lon}
+          onOpenChange={(open) => {
+            setSelectedIndex(undefined);
+          }}
+          isOpen={metaData !== undefined}
+        />
+      </DeckGL>
+      <div className="absolute left-8 top-8 flex flex-col gap-x-8 gap-y-2 md:flex-row">
+        {/* <PostCovetLogo /> */}
+        {/* //@ts-ignore asdaf */}
+        {/* <svg src={PostCovetLogo} /> */}
+        {/* // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+        <Image src={PostCovetLogo as string} alt="postcovet" />
+
+        <div className="flex flex-col md:flex-row">
+          <Input
+            value={searchValue}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              setSelectedIndex(undefined);
+            }}
+            placeholder="Search by name"
+          />
+          <div className="left-full top-0 flex h-full whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
+            ({data.length} results)
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 

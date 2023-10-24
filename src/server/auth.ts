@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import Mixpanel from "mixpanel";
 import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,
@@ -6,9 +7,12 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import GoogleProvider from "next-auth/providers/google";
 
 import { env } from "~/env.mjs";
 import { db } from "~/server/db";
+
+const mixpanel = Mixpanel.init(env.NEXT_PUBLIC_MIXPANEL_TOKEN, { debug: true });
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -52,6 +56,10 @@ export const authOptions: NextAuthOptions = {
     //   clientId: env.DISCORD_CLIENT_ID,
     //   clientSecret: env.DISCORD_CLIENT_SECRET,
     // }),
+    GoogleProvider({
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    }),
     /**
      * ...add more providers here.
      *
@@ -62,6 +70,21 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
+  events: {
+    signIn(message) {
+      const { user } = message;
+
+      mixpanel.track("Sign In");
+      console.log("sign in");
+      console.log(message);
+
+      mixpanel.people.set(user.id, {
+        $name: user.name,
+        $email: user.email,
+        $created: new Date().toISOString(),
+      });
+    },
+  },
 };
 
 /**

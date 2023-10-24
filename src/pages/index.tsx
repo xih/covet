@@ -6,15 +6,15 @@ import dynamic from "next/dynamic";
 import KeplerMap from "~/components/KeplerMap";
 import mixpanel from "mixpanel-browser";
 import { AlertDialogDemo } from "~/shadcn/components/AlertDialogDemo";
+import { Button } from "~/components/ui/button";
+import UserAuth from "~/components/ui/UserAuth";
+import { useState } from "react";
 
 const DeckMap = dynamic(() => import("~/components/DeckMap"), {
   ssr: false,
 });
 
 export default function Home() {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
-  // console.log(data, "data");
-
   mixpanel.init(process.env.NEXT_PUBLIC_MIXPANEL_TOKEN!, {
     debug: true,
     track_pageview: true,
@@ -32,6 +32,9 @@ export default function Home() {
         <DeckMap />
         <div className="absolute bottom-8 right-8">
           <AlertDialogDemo />
+        </div>
+        <div className="absolute right-8 top-8">
+          <UserAuth />
         </div>
         {/* <KeplerMap /> */}
       </main>
