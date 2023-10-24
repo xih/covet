@@ -8,6 +8,10 @@ import { ScatterplotLayer } from "@deck.gl/layers/typed";
 import data from "../../public/final_properties_v1_2.json";
 import { Modal } from "~/shadcn/components/Modal";
 import { Input } from "~/components/ui/input";
+import PostCovetLogo from "/public/Post-Covet_LOGO_SVG.svg";
+import { Image } from "next/image";
+
+// import { ReactComponent as PostCovetLogo } from "/public/Post-Covet_LOGO_SVG.svg";
 
 type DataPoint = {
   block: number;
@@ -128,6 +132,11 @@ export default function DeckMap() {
         controller={true}
         layers={layers}
         onClick={(data) => {
+          if (!data.layer) {
+            setSelectedIndex(-1);
+            return;
+          }
+
           if (data.index === -1) return;
 
           const pointMetaData = data.object as DataPoint;
@@ -160,7 +169,12 @@ export default function DeckMap() {
           isOpen={metaData !== undefined}
         />
       </DeckGL>
-      <div className="absolute left-8 top-8">
+      <div className="absolute left-8 top-8 flex flex-col md:flex-row">
+        {/* <PostCovetLogo /> */}
+        {/* //@ts-ignore asdaf */}
+        {/* <svg src={PostCovetLogo} /> */}
+        {/* // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+        {/* <Image src={PostCovetLogo} alt="postcovet" /> */}
         <Input
           value={searchValue}
           onChange={(e) => {
@@ -169,7 +183,7 @@ export default function DeckMap() {
           }}
           placeholder="Search by name"
         />
-        <div className="absolute left-full top-0 flex h-full items-center justify-center whitespace-nowrap p-2 text-white">
+        <div className="left-full top-0 flex h-full whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
           ({data.length} results)
         </div>
       </div>
