@@ -9,7 +9,7 @@ import data from "../../public/final_properties_v1_2.json";
 import { Modal } from "~/shadcn/components/Modal";
 import { Input } from "~/components/ui/input";
 import PostCovetLogo from "/public/Post-Covet_LOGO_SVG.svg";
-import { Image } from "next/image";
+import Image from "next/image";
 
 // import { ReactComponent as PostCovetLogo } from "/public/Post-Covet_LOGO_SVG.svg";
 
@@ -169,22 +169,25 @@ export default function DeckMap() {
           isOpen={metaData !== undefined}
         />
       </DeckGL>
-      <div className="absolute left-8 top-8 flex flex-col md:flex-row">
+      <div className="absolute left-8 top-8 flex flex-col gap-x-8 gap-y-2 md:flex-row">
         {/* <PostCovetLogo /> */}
         {/* //@ts-ignore asdaf */}
         {/* <svg src={PostCovetLogo} /> */}
         {/* // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-        {/* <Image src={PostCovetLogo} alt="postcovet" /> */}
-        <Input
-          value={searchValue}
-          onChange={(e) => {
-            setSearchValue(e.target.value);
-            setSelectedIndex(undefined);
-          }}
-          placeholder="Search by name"
-        />
-        <div className="left-full top-0 flex h-full whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
-          ({data.length} results)
+        <Image src={PostCovetLogo as string} alt="postcovet" />
+
+        <div className="flex flex-col md:flex-row">
+          <Input
+            value={searchValue}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              setSelectedIndex(undefined);
+            }}
+            placeholder="Search by name"
+          />
+          <div className="left-full top-0 flex h-full whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
+            ({data.length} results)
+          </div>
         </div>
       </div>
     </>
