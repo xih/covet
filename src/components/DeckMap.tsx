@@ -169,7 +169,7 @@ export default function DeckMap() {
           isOpen={metaData !== undefined}
         />
       </DeckGL>
-      <div className="absolute left-8 top-8 flex flex-col gap-x-8 gap-y-2 md:flex-row">
+      <div className="absolute z-0 flex w-full flex-col gap-x-8 gap-y-2 p-4 md:flex-row md:p-8">
         {/* <PostCovetLogo /> */}
         {/* //@ts-ignore asdaf */}
         {/* <svg src={PostCovetLogo} /> */}

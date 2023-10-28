@@ -10,6 +10,13 @@ import {
   SheetClose,
 } from "~/components/ui/sheet";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+
 export type ModalProps = {
   isOpen: boolean;
   location?: string;
@@ -60,20 +67,29 @@ export const Modal = (props: ModalProps) => {
               <span className="font-medium text-slate-900">
                 {grantee?.split(",").map((name) => (
                   <p key={name} className="underline">
-                    <Link
-                      href={`https://www.google.com/search?q=${encodeURIComponent(
-                        name,
-                      )}`}
-                      target="_blank"
-                      onClick={() => {
-                        mixpanel.track("searched on google", {
-                          type: "grantee",
-                          name: name,
-                        });
-                      }}
-                    >
-                      {name}
-                    </Link>
+                    <TooltipProvider>
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <Link
+                            href={`https://www.google.com/search?q=${encodeURIComponent(
+                              name,
+                            )}`}
+                            target="_blank"
+                            onClick={() => {
+                              mixpanel.track("searched on google", {
+                                type: "grantee",
+                                name: name,
+                              });
+                            }}
+                          >
+                            {name}
+                          </Link>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Search on Google</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </p>
                 ))}
               </span>
@@ -86,21 +102,30 @@ export const Modal = (props: ModalProps) => {
                 {grantor?.split(",").map((name) => {
                   return (
                     <p key={name} className="underline">
-                      <Link
-                        href={`https://www.google.com/search?q=${encodeURIComponent(
-                          name,
-                        )}`}
-                        target="_blank"
-                        onClick={() => {
-                          mixpanel.track("searched on google", {
-                            type: "grantor",
-                            name: name,
-                          });
-                        }}
-                        // add mixpanel event here:
-                      >
-                        {name}
-                      </Link>
+                      <TooltipProvider>
+                        <Tooltip delayDuration={200}>
+                          <TooltipTrigger asChild>
+                            <Link
+                              href={`https://www.google.com/search?q=${encodeURIComponent(
+                                name,
+                              )}`}
+                              target="_blank"
+                              onClick={() => {
+                                mixpanel.track("searched on google", {
+                                  type: "grantor",
+                                  name: name,
+                                });
+                              }}
+                              // add mixpanel event here:
+                            >
+                              {name}
+                            </Link>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Search on Google</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </p>
                   );
                 })}
