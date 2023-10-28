@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
+import MiniSearch from "minisearch";
 
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
 
@@ -40,17 +41,43 @@ export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
+  const [data, setData] = useState(cleanedData);
+  function handleSearch(query: string) {
+    setSearchValue(query);
+    setSelectedIndex(undefined);
+  }
 
-  const searchValueLower = searchValue.toLowerCase();
+  // const data = searchValue
+  //   ? cleanedData.filter(
+  //       (x) =>
+  //         x.grantee.toLowerCase().includes(searchValueLower) ||
+  //         x.grantor.toLowerCase().includes(searchValueLower),
+  //     )
+  //   : cleanedData;
 
-  const data = searchValue
-    ? cleanedData.filter(
-        (x) =>
-          x.grantee.toLowerCase().includes(searchValueLower) ||
-          x.grantor.toLowerCase().includes(searchValueLower),
-      )
-    : cleanedData;
+  useEffect(() => {
+    function filterData(searchValue: string, data: CleanedDataPoint[]) {
+      const miniSearch = new MiniSearch({
+        fields: ["grantor", "grantee"], // fields to index for full-text search
+        storeFields: [
+          "grantor",
+          "grantee",
+          "lat",
+          "lon",
+          "lot",
+          "block",
+          "propertyLocation",
+        ], // fields to return with search results
+      });
 
+      miniSearch.addAll(data);
+      const results = miniSearch.search(searchValue);
+      setData(results);
+    }
+    filterData(searchValue, data);
+  }, [searchValue]);
+
+  console.log(data);
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
     data: data,
@@ -179,10 +206,7 @@ export default function DeckMap() {
         <div className="flex flex-col md:flex-row">
           <Input
             value={searchValue}
-            onChange={(e) => {
-              setSearchValue(e.target.value);
-              setSelectedIndex(undefined);
-            }}
+            onChange={(e) => handleSearch(e.target.value || "")}
             placeholder="Search by name"
           />
           <div className="left-full top-0 flex h-full whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
@@ -195,7 +219,7 @@ export default function DeckMap() {
 }
 
 function cleanData(data: DataPoint[]) {
-  return data.map<CleanedDataPoint>((d) => {
+  return data.map<CleanedDataPoint>((d, idx) => {
     const first = d.propertyLocation.slice(0, 4);
     const middle = d.propertyLocation.slice(4, -4);
     const last = d.propertyLocation.slice(-4);
@@ -208,6 +232,7 @@ function cleanData(data: DataPoint[]) {
 
     return {
       ...d,
+      id: idx,
       prettyLocation,
     };
   });
