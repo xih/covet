@@ -35,13 +35,15 @@ export default function Home() {
         <div className="absolute bottom-8 right-8">
           <AlertDialogDemo />
         </div>
-        <div className="absolute right-8 top-8">
+        <div className="absolute right-0 flex flex-row-reverse p-4 md:p-8">
           {/* <UserAuth /> */}
           {isSignedIn ? (
             <UserButton afterSignOutUrl="/" />
           ) : (
             <SignInButton mode="modal">
-              <Button variant="outline">Sign In</Button>
+              <Button variant="outline" className="">
+                Sign In
+              </Button>
             </SignInButton>
           )}
         </div>
