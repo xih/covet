@@ -9,6 +9,7 @@ import { AlertDialogDemo } from "~/shadcn/components/AlertDialogDemo";
 import { Button } from "~/components/ui/button";
 import UserAuth from "~/components/ui/UserAuth";
 import { useState } from "react";
+import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
 
 const DeckMap = dynamic(() => import("~/components/DeckMap"), {
   ssr: false,
@@ -20,6 +21,7 @@ export default function Home() {
     track_pageview: true,
     persistence: "localStorage",
   });
+  const { isSignedIn, user, isLoaded } = useUser();
 
   return (
     <>
@@ -34,7 +36,14 @@ export default function Home() {
           <AlertDialogDemo />
         </div>
         <div className="absolute right-8 top-8">
-          <UserAuth />
+          {/* <UserAuth /> */}
+          {isSignedIn ? (
+            <UserButton afterSignOutUrl="/" />
+          ) : (
+            <SignInButton mode="modal">
+              <Button variant="outline">Sign In</Button>
+            </SignInButton>
+          )}
         </div>
         {/* <KeplerMap /> */}
       </main>
