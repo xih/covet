@@ -1,4 +1,5 @@
 import { type Session } from "next-auth";
+import { SessionProvider } from "next-auth/react";
 import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 import {
@@ -7,7 +8,11 @@ import {
   SignedOut,
   RedirectToSignIn,
 } from "@clerk/nextjs";
+
 import "~/styles/globals.css";
+// import { Provider } from "react-redux";
+
+// import store from "../store/reducers";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -15,12 +20,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <ClerkProvider {...pageProps}>
-      <SignedIn>
-        <Component {...pageProps} />
-      </SignedIn>
-      <SignedOut>
-        <RedirectToSignIn redirectUrl={"/"} afterSignInUrl={"/"} />
-      </SignedOut>
+      <Component {...pageProps} />
     </ClerkProvider>
   );
 };
