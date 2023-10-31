@@ -10,6 +10,9 @@ import { Modal } from "~/shadcn/components/Modal";
 import { Input } from "~/components/ui/input";
 import PostCovetLogo from "/public/Post-Covet_LOGO_SVG.svg";
 import Image from "next/image";
+import { useMapStore } from "~/store/store";
+import { useRouter } from "next/router";
+import { useUser } from "@clerk/nextjs";
 
 // import { ReactComponent as PostCovetLogo } from "/public/Post-Covet_LOGO_SVG.svg";
 
@@ -40,6 +43,14 @@ export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
+  const router = useRouter();
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  const addressCounter = useMapStore((state) => state.addressCounter);
+  console.log(addressCounter, "address counter");
+  const increaseAddressCounter = useMapStore(
+    (state) => state.increaseAddressCounter,
+  );
 
   const searchValueLower = searchValue.toLowerCase();
 
@@ -139,6 +150,12 @@ export default function DeckMap() {
 
           if (data.index === -1) return;
 
+          if (addressCounter > 4 && !isSignedIn) {
+            void router.replace("/sign-in");
+          } else {
+            increaseAddressCounter(1);
+          }
+
           const pointMetaData = data.object as DataPoint;
           mixpanel.track("click address", {
             "Property name": pointMetaData?.propertyLocation,
@@ -146,6 +163,7 @@ export default function DeckMap() {
             Grantee: pointMetaData?.grantee,
           });
           setSelectedIndex(data.index);
+          return;
         }}
       >
         <Map

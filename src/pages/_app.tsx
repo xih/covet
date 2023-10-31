@@ -1,8 +1,13 @@
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { type AppType } from "next/app";
-import { ClerkProvider } from "@clerk/nextjs";
 import { api } from "~/utils/api";
+import {
+  ClerkProvider,
+  SignedIn,
+  SignedOut,
+  RedirectToSignIn,
+} from "@clerk/nextjs";
 
 import "~/styles/globals.css";
 import Head from "next/head";
