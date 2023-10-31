@@ -8,8 +8,9 @@ import mixpanel from "mixpanel-browser";
 import { AlertDialogDemo } from "~/shadcn/components/AlertDialogDemo";
 import { Button } from "~/components/ui/button";
 import UserAuth from "~/components/ui/UserAuth";
-import { useState } from "react";
-import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import { UserButton, SignInButton, useUser, useSignIn } from "@clerk/nextjs";
+import { env } from "process";
 
 const DeckMap = dynamic(() => import("~/components/DeckMap"), {
   ssr: false,
@@ -17,16 +18,32 @@ const DeckMap = dynamic(() => import("~/components/DeckMap"), {
 
 export default function Home() {
   mixpanel.init(process.env.NEXT_PUBLIC_MIXPANEL_TOKEN!, {
-    debug: true,
+    debug: env.development ? true : false,
+    // debug: true,
     track_pageview: true,
     persistence: "localStorage",
   });
   const { isSignedIn, user, isLoaded } = useUser();
+  const { signIn } = useSignIn();
+
+  useEffect(() => {
+    if (user) {
+      mixpanel.identify(user.id);
+      mixpanel.register({
+        Email: user.primaryEmailAddress?.emailAddress,
+      });
+      mixpanel.people.set({
+        // Email: user.primaryEmailAddress?.emailAddress,
+        name: user.fullName,
+        createdAt: new Date().toISOString(),
+      });
+    }
+  }, [signIn?.status, user]);
 
   return (
     <>
       <Head>
-        <title>Covet - find who owns the property in San Francisco</title>
+        <title>Covet - find who owns property in San Francisco</title>
         <meta name="description" content="who owns these homes here?" />
         <link rel="icon" href="/covet-favicon.ico" />
       </Head>
@@ -47,7 +64,6 @@ export default function Home() {
             </SignInButton>
           )}
         </div>
-        {/* <KeplerMap /> */}
       </main>
     </>
   );
