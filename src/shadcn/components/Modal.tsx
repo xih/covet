@@ -58,7 +58,10 @@ export const Modal = (props: ModalProps) => {
 
   return (
     <Sheet open={isOpen} modal={false}>
-      <SheetContent side={window.innerWidth > 800 ? "right" : "bottom"}>
+      <SheetContent
+        showCloseButton={false}
+        side={window.innerWidth > 800 ? "right" : "bottom"}
+      >
         <SheetHeader>
           <SheetTitle className="text-left"> {prettyLocation}</SheetTitle>
           <SheetDescription className="text-left">
