@@ -10,9 +10,21 @@ import { Button } from "~/components/ui/button";
 import UserAuth from "~/components/ui/UserAuth";
 import { useState } from "react";
 import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
+import { useMapStore } from "~/store/store";
+
+const LoadingView = () => {
+  return (
+    <div className="bg-black">
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-t-4 border-solid border-red-500"></div>
+      </div>
+    </div>
+  );
+};
 
 const DeckMap = dynamic(() => import("~/components/DeckMap"), {
   ssr: false,
+  loading: () => <LoadingView />,
 });
 
 export default function Home() {
@@ -21,6 +33,11 @@ export default function Home() {
     track_pageview: true,
     persistence: "localStorage",
   });
+
+  const addressCounter = useMapStore((state) => state.addressCounter);
+  const remainingClickMessage =
+    addressCounter >= 5 ? "Sign in, comrade" : `${5 - addressCounter} homes`;
+
   const { isSignedIn, user, isLoaded } = useUser();
 
   return (
@@ -40,11 +57,19 @@ export default function Home() {
           {isSignedIn ? (
             <UserButton afterSignOutUrl="/" />
           ) : (
-            <SignInButton mode="modal">
-              <Button variant="outline" className="">
-                Sign In
-              </Button>
-            </SignInButton>
+            <div className="flex items-center">
+              <span
+                suppressHydrationWarning
+                className="mr-4 hidden text-white sm:inline"
+              >
+                {remainingClickMessage}
+              </span>
+              <SignInButton mode="modal">
+                <Button variant="outline" className="">
+                  Sign In
+                </Button>
+              </SignInButton>
+            </div>
           )}
         </div>
         {/* <KeplerMap /> */}

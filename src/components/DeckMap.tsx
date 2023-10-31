@@ -51,6 +51,8 @@ export default function DeckMap() {
   const increaseAddressCounter = useMapStore(
     (state) => state.increaseAddressCounter,
   );
+  const remainingClickMessage =
+    addressCounter >= 5 ? "Sign in, comrade" : `${5 - addressCounter} homes`;
 
   const searchValueLower = searchValue.toLowerCase();
 
@@ -203,8 +205,11 @@ export default function DeckMap() {
             }}
             placeholder="Search by name"
           />
-          <div className="left-full top-0 flex h-full whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
-            ({data.length} results)
+          <div className="left-full top-0 flex h-full justify-between whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
+            <span>({data.length} results)</span>
+            <span className="sm:hidden" suppressHydrationWarning>
+              {remainingClickMessage}
+            </span>
           </div>
         </div>
       </div>
