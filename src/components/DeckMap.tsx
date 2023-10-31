@@ -52,15 +52,15 @@ export default function DeckMap() {
     (state) => state.increaseAddressCounter,
   );
 
-  const searchValueLower = searchValue.toLowerCase();
-
-  const data = searchValue
-    ? cleanedData.filter(
-        (x) =>
-          x.grantee.toLowerCase().includes(searchValueLower) ||
-          x.grantor.toLowerCase().includes(searchValueLower),
-      )
-    : cleanedData;
+  const searchTokens = searchValue.toLowerCase().split(" ");
+  console.log(searchTokens);
+  const data = cleanedData.filter((entry) => {
+    return searchTokens.every(
+      (token) =>
+        entry.grantee.toLowerCase().includes(token) ||
+        entry.grantor.toLowerCase().includes(token),
+    );
+  });
 
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
