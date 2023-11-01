@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
@@ -13,6 +13,7 @@ import Image from "next/image";
 import { useMapStore } from "~/store/store";
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
+import { useDebounce } from "~/lib/hooks";
 
 // import { ReactComponent as PostCovetLogo } from "/public/Post-Covet_LOGO_SVG.svg";
 
@@ -45,22 +46,26 @@ export default function DeckMap() {
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
   const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
+  const debouncedSearchValue = useDebounce(searchValue, 200);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
-  console.log(addressCounter, "address counter");
   const increaseAddressCounter = useMapStore(
     (state) => state.increaseAddressCounter,
   );
 
-  const searchTokens = searchValue.toLowerCase().split(" ");
-  console.log(searchTokens);
-  const data = cleanedData.filter((entry) => {
-    return searchTokens.every(
-      (token) =>
-        entry.grantee.toLowerCase().includes(token) ||
-        entry.grantor.toLowerCase().includes(token),
-    );
-  });
+  const data = useMemo(() => {
+    const searchTokens = debouncedSearchValue.toLowerCase().split(" ");
+    console.log({ searchTokens });
+    const filteredData = cleanedData.filter((entry) => {
+      return searchTokens.every(
+        (token) =>
+          entry.grantee.toLowerCase().includes(token) ||
+          entry.grantor.toLowerCase().includes(token),
+      );
+    });
+    console.log(filteredData.length);
+    return filteredData;
+  }, [debouncedSearchValue]);
 
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
