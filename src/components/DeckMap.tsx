@@ -46,7 +46,7 @@ export default function DeckMap() {
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
   const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
-  const debouncedSearchValue = useDebounce(searchValue, 200);
+  const debouncedSearchValue = useDebounce(searchValue, 250);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
   const increaseAddressCounter = useMapStore(
@@ -55,15 +55,14 @@ export default function DeckMap() {
 
   const data = useMemo(() => {
     const searchTokens = debouncedSearchValue.toLowerCase().split(" ");
-    console.log({ searchTokens });
     const filteredData = cleanedData.filter((entry) => {
       return searchTokens.every(
         (token) =>
           entry.grantee.toLowerCase().includes(token) ||
-          entry.grantor.toLowerCase().includes(token),
+          entry.grantor.toLowerCase().includes(token) ||
+          entry.prettyLocation.includes(token),
       );
     });
-    console.log(filteredData.length);
     return filteredData;
   }, [debouncedSearchValue]);
 
@@ -227,7 +226,11 @@ function cleanData(data: DataPoint[]) {
       first.replace(/^0+/, ""),
       middle.trim().replace(/^0+/, ""),
       last.replace(/^0+/, ""),
-    ].join(" ");
+    ]
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
 
     return {
       ...d,
