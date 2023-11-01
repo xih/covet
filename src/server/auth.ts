@@ -75,8 +75,6 @@ export const authOptions: NextAuthOptions = {
       const { user } = message;
 
       mixpanel.track("Sign In");
-      console.log("sign in");
-      console.log(message);
 
       mixpanel.people.set(user.id, {
         $name: user.name,
