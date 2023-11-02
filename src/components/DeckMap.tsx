@@ -52,7 +52,9 @@ export default function DeckMap() {
     (state) => state.increaseAddressCounter,
   );
   const remainingClickMessage =
-    addressCounter >= 5 ? "Sign in, comrade" : `${5 - addressCounter} homes`;
+    addressCounter >= 5
+      ? "Sign in, old sport"
+      : `${5 - addressCounter} clicks left`;
 
   const searchValueLower = searchValue.toLowerCase();
 
@@ -154,6 +156,7 @@ export default function DeckMap() {
 
           if (addressCounter > 4 && !isSignedIn) {
             void router.replace("/sign-in");
+            return;
           } else {
             increaseAddressCounter(1);
           }
@@ -208,7 +211,7 @@ export default function DeckMap() {
           <div className="left-full top-0 flex h-full justify-between whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
             <span>({data.length} results)</span>
             <span className="sm:hidden" suppressHydrationWarning>
-              {remainingClickMessage}
+              {isSignedIn ? null : remainingClickMessage}
             </span>
           </div>
         </div>
