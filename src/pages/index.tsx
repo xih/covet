@@ -66,7 +66,7 @@ export default function Home() {
       </Head>
       <main className="">
         <DeckMap />
-        <div className="absolute bottom-8 right-8">
+        <div className="absolute bottom-4 right-4">
           <AlertDialogDemo />
         </div>
         <div className="absolute right-0 flex flex-row-reverse p-4 md:p-8">
