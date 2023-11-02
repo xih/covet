@@ -1,4 +1,4 @@
-import mixpanel from "mixpanel";
+import mixpanel from "mixpanel-browser";
 import {
   AlertDialog,
   AlertDialogAction,
