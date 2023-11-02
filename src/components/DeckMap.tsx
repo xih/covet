@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
@@ -11,6 +11,7 @@ import Image from "next/image";
 import { useMapStore } from "~/store/store";
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
+import { useDebounce } from "~/lib/hooks";
 import { Button } from "./ui/button";
 import { Moon, Map as LucideMap } from "lucide-react";
 
@@ -43,23 +44,29 @@ export default function DeckMap() {
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
   const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
+  const debouncedSearchValue = useDebounce(searchValue, 250);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
   const increaseAddressCounter = useMapStore(
     (state) => state.increaseAddressCounter,
   );
   const remainingClickMessage =
-    addressCounter >= 5 ? "Sign in, comrade" : `${5 - addressCounter} homes`;
+    addressCounter >= 5
+      ? "Sign in, old sport"
+      : `${5 - addressCounter} clicks left`;
 
-  const searchValueLower = searchValue.toLowerCase();
-
-  const data = searchValue
-    ? cleanedData.filter(
-        (x) =>
-          x.grantee.toLowerCase().includes(searchValueLower) ||
-          x.grantor.toLowerCase().includes(searchValueLower),
-      )
-    : cleanedData;
+  const data = useMemo(() => {
+    const searchTokens = debouncedSearchValue.toLowerCase().split(" ");
+    const filteredData = cleanedData.filter((entry) => {
+      return searchTokens.every(
+        (token) =>
+          entry.grantee.toLowerCase().includes(token) ||
+          entry.grantor.toLowerCase().includes(token) ||
+          entry.prettyLocation.includes(token),
+      );
+    });
+    return filteredData;
+  }, [debouncedSearchValue]);
 
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
@@ -156,6 +163,7 @@ export default function DeckMap() {
 
           if (addressCounter > 4 && !isSignedIn) {
             void router.replace("/sign-in");
+            return;
           } else {
             increaseAddressCounter(1);
           }
@@ -206,7 +214,7 @@ export default function DeckMap() {
           <div className="left-full top-0 flex h-full justify-between whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
             <span>({data.length} results)</span>
             <span className="sm:hidden" suppressHydrationWarning>
-              {remainingClickMessage}
+              {isSignedIn ? null : remainingClickMessage}
             </span>
           </div>
         </div>
@@ -242,7 +250,11 @@ function cleanData(data: DataPoint[]) {
       first.replace(/^0+/, ""),
       middle.trim().replace(/^0+/, ""),
       last.replace(/^0+/, ""),
-    ].join(" ");
+    ]
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
 
     return {
       ...d,
