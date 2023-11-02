@@ -26,7 +26,6 @@ function cleanData(data) {
   });
 }
 
-// Read JSON from file
 fs.readFile(sourceFile, "utf8", (err, jsonString) => {
   if (err) {
     console.log("Error reading file:", err);
