@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
-
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
 
 import data from "../../public/properties_v1_3.json";
@@ -14,8 +13,8 @@ import { useMapStore } from "~/store/store";
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
 import { useDebounce } from "~/lib/hooks";
-
-// import { ReactComponent as PostCovetLogo } from "/public/Post-Covet_LOGO_SVG.svg";
+import { Button } from "./ui/button";
+import { Moon, Map as LucideMap } from "lucide-react";
 
 type DataPoint = {
   block: number;
@@ -126,6 +125,11 @@ export default function DeckMap() {
   const metaData =
     selectedIndex !== undefined ? data[selectedIndex] : undefined;
 
+  const darkMapStyle = "mapbox://styles/mapbox/dark-v11";
+  const satelliteMapStyle = "mapbox://styles/mapbox/satellite-v9";
+
+  const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
+
   return (
     <>
       <DeckGL
@@ -179,7 +183,7 @@ export default function DeckMap() {
             latitude: 37.8,
             zoom: 14,
           }}
-          mapStyle={"mapbox://styles/mapbox/dark-v11"}
+          mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
         <Modal
           location={metaData?.propertyLocation}
@@ -194,10 +198,6 @@ export default function DeckMap() {
         />
       </DeckGL>
       <div className="absolute z-0 flex w-full flex-col gap-x-8 gap-y-2 p-4 md:flex-row md:p-8">
-        {/* <PostCovetLogo /> */}
-        {/* //@ts-ignore asdaf */}
-        {/* <svg src={PostCovetLogo} /> */}
-        {/* // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
         <Image src={PostCovetLogo as string} alt="postcovet" />
 
         <div className="flex flex-col md:flex-row">
@@ -216,6 +216,23 @@ export default function DeckMap() {
             </span>
           </div>
         </div>
+      </div>
+      <div className="absolute bottom-0 left-0 z-0 w-full p-4">
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setIsSatelliteMapStyle(!isSatelliteMapStyle);
+            mixpanel.track("click map style", {
+              isSatelliteMapStyle: isSatelliteMapStyle,
+            });
+          }}
+        >
+          {isSatelliteMapStyle ? (
+            <Moon className="h-4 w-4" />
+          ) : (
+            <LucideMap className="h-4 w-4" />
+          )}
+        </Button>
       </div>
     </>
   );

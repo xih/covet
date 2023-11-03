@@ -1,3 +1,4 @@
+import mixpanel from "mixpanel-browser";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,12 +16,19 @@ export function AlertDialogDemo() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="secondary">Help</Button>
+        <Button
+          onClick={() => {
+            mixpanel.track("click help");
+          }}
+          variant="secondary"
+        >
+          Help
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>How do I use Covet?</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogTitle>How do I use Post Covet?</AlertDialogTitle>
+          <AlertDialogDescription className="text-left">
             <span>1. Click on a dot to see an address in SF</span>
             <br />
             2. Find out whos the spot
