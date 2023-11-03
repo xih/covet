@@ -1,5 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-import Map from "react-map-gl";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Map, { MapRef } from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
@@ -46,6 +52,8 @@ export default function DeckMap() {
   const { isLoaded, isSignedIn, user } = useUser();
   const debouncedSearchValue = useDebounce(searchValue, 250);
   const analyticsSearchValue = useDebounce(searchValue, 1250);
+  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
+  const mapRef = useRef<MapRef>(null);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
   const increaseAddressCounter = useMapStore(
@@ -137,10 +145,25 @@ export default function DeckMap() {
 
   const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
 
+  // const onScopeChange = useCallback(() => {
+  //   const point = data[0];
+  //   if (point){
+  //     mapRef.current?.flyTo({ center: [point.lon, point.lat], duration: 2000 });
+  //   }
+  // }, [data]);
+
+  useEffect(() => {
+    const point = data[0];
+    if (point) {
+      mapRef.current?.flyTo({ center: [point.lon, point.lat], duration: 2000 });
+    }
+  }, [data]);
+
   return (
     <>
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
+        // initialViewState={viewState}
+        initialViewState={viewState}
         style={{
           height: "100vh",
           width: "100vw",
@@ -185,11 +208,13 @@ export default function DeckMap() {
       >
         <Map
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          initialViewState={{
-            longitude: -122.4,
-            latitude: 37.8,
-            zoom: 14,
-          }}
+          // initialViewState={{
+          //   longitude: -122.4,
+          //   latitude: 37.8,
+          //   zoom: 14,
+          // }}
+          ref={mapRef}
+          // initialViewState={viewState}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
         <Modal
