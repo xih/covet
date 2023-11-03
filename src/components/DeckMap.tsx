@@ -70,10 +70,9 @@ export default function DeckMap() {
   }, [debouncedSearchValue]);
 
   useEffect(() => {
-    if (!analyticsSearchValue) {
-      return;
+    if (analyticsSearchValue) {
+      mixpanel.track("search", { query: analyticsSearchValue });
     }
-    mixpanel.track("search", { query: analyticsSearchValue });
   }, [analyticsSearchValue]);
 
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
