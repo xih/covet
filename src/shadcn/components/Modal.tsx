@@ -63,7 +63,33 @@ export const Modal = (props: ModalProps) => {
         side={window.innerWidth > 800 ? "right" : "bottom"}
       >
         <SheetHeader>
-          <SheetTitle className="text-left"> {prettyLocation}</SheetTitle>
+          <SheetTitle className="text-left">
+            <p key={prettyLocation} className="underline">
+              <TooltipProvider>
+                <Tooltip delayDuration={200}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={`https://www.google.com/search?q=${encodeURIComponent(
+                        prettyLocation,
+                      )}`}
+                      target="_blank"
+                      onClick={() => {
+                        mixpanel.track("search address on google", {
+                          type: "address",
+                          location: prettyLocation,
+                        });
+                      }}
+                    >
+                      {prettyLocation}
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Search on Google</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </p>
+          </SheetTitle>
           <SheetDescription className="text-left">
             <p>
               Grantee:{" "}
