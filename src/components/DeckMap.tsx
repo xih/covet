@@ -56,6 +56,7 @@ export default function DeckMap() {
       : `${5 - addressCounter} clicks left`;
 
   const data = useMemo(() => {
+    mixpanel.track("search", { query: debouncedSearchValue });
     const searchTokens = debouncedSearchValue.toLowerCase().split(" ");
     const filteredData = cleanedData.filter((entry) => {
       return searchTokens.every(
