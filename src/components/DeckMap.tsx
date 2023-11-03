@@ -38,8 +38,8 @@ const INITIAL_VIEW_STATE = {
   longitude: -122.41669,
   latitude: 37.7853,
   zoom: 13,
-  pitch: 0,
-  bearing: 0,
+  // pitch: 0,
+  // bearing: 0,
 };
 
 const cleanedData = data as DataPoint[];
@@ -52,7 +52,7 @@ export default function DeckMap() {
   const { isLoaded, isSignedIn, user } = useUser();
   const debouncedSearchValue = useDebounce(searchValue, 250);
   const analyticsSearchValue = useDebounce(searchValue, 1250);
-  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
+  // const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const mapRef = useRef<MapRef>(null);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
@@ -155,7 +155,16 @@ export default function DeckMap() {
   useEffect(() => {
     const point = data[0];
     if (point) {
-      mapRef.current?.flyTo({ center: [point.lon, point.lat], duration: 2000 });
+      console.log(point);
+      // mapRef.current?.flyTo({ center: [point.lon, point.lat], duration: 2000 });
+      console.log(mapRef.current);
+      mapRef.current?.fitBounds(
+        [
+          [point.lon, point.lat],
+          [point.lon + 1, point.lat + 1],
+        ],
+        { padding: 40, duration: 1000 },
+      );
     }
   }, [data]);
 
@@ -163,7 +172,7 @@ export default function DeckMap() {
     <>
       <DeckGL
         // initialViewState={viewState}
-        initialViewState={viewState}
+        initialViewState={INITIAL_VIEW_STATE}
         style={{
           height: "100vh",
           width: "100vw",
@@ -188,6 +197,12 @@ export default function DeckMap() {
           }
 
           if (data.index === -1) return;
+          const pointMetaData = data.object as DataPoint;
+
+          mapRef.current?.flyTo({
+            center: [pointMetaData.lon, pointMetaData.lat],
+            duration: 2000,
+          });
 
           if (addressCounter > 4 && !isSignedIn) {
             void router.replace("/sign-in");
@@ -196,7 +211,6 @@ export default function DeckMap() {
             increaseAddressCounter(1);
           }
 
-          const pointMetaData = data.object as DataPoint;
           mixpanel.track("click address", {
             "Property name": pointMetaData?.propertyLocation,
             Grantor: pointMetaData?.grantor,
@@ -208,11 +222,7 @@ export default function DeckMap() {
       >
         <Map
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          // initialViewState={{
-          //   longitude: -122.4,
-          //   latitude: 37.8,
-          //   zoom: 14,
-          // }}
+          // initialViewState={INITIAL_VIEW_STATE}
           ref={mapRef}
           // initialViewState={viewState}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
