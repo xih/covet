@@ -202,7 +202,7 @@ export default function DeckMap() {
             placeholder="Search by name"
           />
           <div className="left-full top-0 flex h-full justify-between whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
-            <span>({data.length} results)</span>
+            <span className="text-slate-100">{data.length} results</span>
             <span className="sm:hidden" suppressHydrationWarning>
               {isSignedIn ? null : remainingClickMessage}
             </span>
