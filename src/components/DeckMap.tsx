@@ -3,7 +3,8 @@ import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
-import data from "../../public/final_properties_v1_2.json";
+
+import data from "../../public/properties_v1_3.json";
 import { Modal } from "~/shadcn/components/Modal";
 import { Input } from "~/components/ui/input";
 import PostCovetLogo from "/public/Post-Covet_LOGO_SVG.svg";
@@ -23,9 +24,8 @@ type DataPoint = {
   propertyLocation: string;
   grantor: string;
   grantee: string;
+  prettyLocation: string;
 };
-
-type CleanedDataPoint = DataPoint & { prettyLocation: string };
 
 // Viewport settings
 const INITIAL_VIEW_STATE = {
@@ -36,7 +36,7 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 };
 
-const cleanedData = cleanData(data as DataPoint[]);
+const cleanedData = data as DataPoint[];
 
 export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
@@ -123,9 +123,7 @@ export default function DeckMap() {
 
   const layers = [ScatterPlayLayer];
   const metaData =
-    selectedIndex !== undefined
-      ? (data as DataPoint[])[selectedIndex]
-      : undefined;
+    selectedIndex !== undefined ? data[selectedIndex] : undefined;
 
   const darkMapStyle = "mapbox://styles/mapbox/dark-v11";
   const satelliteMapStyle = "mapbox://styles/mapbox/satellite-v9";
@@ -142,7 +140,7 @@ export default function DeckMap() {
           position: "fixed",
           overflow: "hidden",
         }}
-        getTooltip={({ object }: { object?: CleanedDataPoint | null }) => {
+        getTooltip={({ object }: { object?: DataPoint | null }) => {
           return object
             ? {
                 text: `Property Location: ${object.prettyLocation}
@@ -238,27 +236,4 @@ export default function DeckMap() {
       </div>
     </>
   );
-}
-
-function cleanData(data: DataPoint[]) {
-  return data.map<CleanedDataPoint>((d) => {
-    const first = d.propertyLocation.slice(0, 4);
-    const middle = d.propertyLocation.slice(4, -4);
-    const last = d.propertyLocation.slice(-4);
-
-    const prettyLocation = [
-      first.replace(/^0+/, ""),
-      middle.trim().replace(/^0+/, ""),
-      last.replace(/^0+/, ""),
-    ]
-      .join(" ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .toLowerCase();
-
-    return {
-      ...d,
-      prettyLocation,
-    };
-  });
 }

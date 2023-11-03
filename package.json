@@ -8,7 +8,8 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "process-data": "node scripts/process.js"
   },
   "dependencies": {
     "@clerk/nextjs": "^4.26.1",
