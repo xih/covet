@@ -70,7 +70,7 @@ export default function DeckMap() {
   }, [debouncedSearchValue]);
 
   useEffect(() => {
-    if (analyticsSearchValue.length <= 2) {
+    if (!analyticsSearchValue) {
       return;
     }
     mixpanel.track("search", { query: analyticsSearchValue });
