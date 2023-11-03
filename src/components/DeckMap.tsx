@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Map from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
@@ -45,6 +45,7 @@ export default function DeckMap() {
   const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
   const debouncedSearchValue = useDebounce(searchValue, 250);
+  const analyticsSearchValue = useDebounce(searchValue, 1250);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
   const increaseAddressCounter = useMapStore(
@@ -67,6 +68,12 @@ export default function DeckMap() {
     });
     return filteredData;
   }, [debouncedSearchValue]);
+
+  useEffect(() => {
+    if (analyticsSearchValue) {
+      mixpanel.track("search", { query: analyticsSearchValue });
+    }
+  }, [analyticsSearchValue]);
 
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
