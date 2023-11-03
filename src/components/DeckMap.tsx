@@ -74,46 +74,69 @@ export default function DeckMap() {
     pickable: true,
     opacity: 0.8,
     filled: true,
-    radiusScale: data.length > 100000 ? 5 : data.length > 10000 ? 10 : 20,
+    radiusScale:
+      data.length > 100000
+        ? 5
+        : data.length > 10000
+        ? 10
+        : data.length > 100
+        ? 20
+        : 50,
     radiusMinPixels: 1,
     radiusMaxPixels: 100,
     lineWidthMinPixels: 0,
     getPosition: (d) => [d.lon, d.lat],
-    getRadius: () => 1,
-    getFillColor: (d, context) => {
-      const value = d.block;
+    getRadius: (d, context) => {
       if (selectedIndex !== undefined && context.index === selectedIndex) {
-        return [255, 255, 204];
+        return 100;
       }
-      if (value <= 1184) {
-        if (hoveredObject && hoveredObject === d) {
-          return [100, 24, 70];
-        }
-        return [90, 24, 70];
-      } else if (value > 1184 && value <= 2116) {
-        if (hoveredObject && hoveredObject === d) {
-          return [115, 24, 70];
-        }
-        return [114, 12, 63];
-      } else if (value > 2116 && value <= 3156) {
-        if (hoveredObject && hoveredObject === d) {
-          return [205, 1, 56];
-        }
-        return [199, 1, 56];
-      } else if (value > 3156 && value <= 4283) {
-        if (hoveredObject && hoveredObject === d) {
-          return [232, 97, 27];
-        }
-        return [227, 97, 27];
-      } else if (value > 4283 && value <= 6438) {
-        if (hoveredObject && hoveredObject === d) {
-          return [246, 146, 14];
-        }
-        return [241, 146, 14];
+      return 1;
+    },
+    getFillColor: (d, context) => {
+      if (selectedIndex !== undefined && context.index === selectedIndex) {
+        // return [255, 255, 204]; // yelllow on select
+        // return [170, 29, 1]; // red on select
+        return [255, 108, 34]; // orange on select
       }
 
-      return [225, 195, 2];
+      // return [202, 179, 229]; // light purple default
+      // return [255, 108, 34]; // orange default
+      return [0, 0, 0]; // black default
     },
+    // getFillColor: (d, context) => {
+    //   const value = d.block;
+    //   if (selectedIndex !== undefined && context.index === selectedIndex) {
+    //     return [255, 255, 204];
+    //   }
+    //   if (value <= 1184) {
+    //     if (hoveredObject && hoveredObject === d) {
+    //       return [100, 24, 70];
+    //     }
+    //     return [90, 24, 70];
+    //   } else if (value > 1184 && value <= 2116) {
+    //     if (hoveredObject && hoveredObject === d) {
+    //       return [115, 24, 70];
+    //     }
+    //     return [114, 12, 63];
+    //   } else if (value > 2116 && value <= 3156) {
+    //     if (hoveredObject && hoveredObject === d) {
+    //       return [205, 1, 56];
+    //     }
+    //     return [199, 1, 56];
+    //   } else if (value > 3156 && value <= 4283) {
+    //     if (hoveredObject && hoveredObject === d) {
+    //       return [232, 97, 27];
+    //     }
+    //     return [227, 97, 27];
+    //   } else if (value > 4283 && value <= 6438) {
+    //     if (hoveredObject && hoveredObject === d) {
+    //       return [246, 146, 14];
+    //     }
+    //     return [241, 146, 14];
+    //   }
+
+    //   return [225, 195, 2];
+    // },
     updateTriggers: {
       getFillColor: [selectedIndex],
     },
