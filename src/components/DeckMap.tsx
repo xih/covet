@@ -33,13 +33,22 @@ type DataPoint = {
   prettyLocation: string;
 };
 
+type ViewState = {
+  longitude: number;
+  latitude: number;
+  zoom: number;
+  pitch: number;
+  bearing: number;
+  transitionDuration: number;
+};
 // Viewport settings
-const INITIAL_VIEW_STATE = {
+const INITIAL_VIEW_STATE: ViewState = {
   longitude: -122.41669,
   latitude: 37.7853,
   zoom: 13,
-  // pitch: 0,
-  // bearing: 0,
+  pitch: 0,
+  bearing: 0,
+  transitionDuration: 1000,
 };
 
 const cleanedData = data as DataPoint[];
@@ -52,7 +61,7 @@ export default function DeckMap() {
   const { isLoaded, isSignedIn, user } = useUser();
   const debouncedSearchValue = useDebounce(searchValue, 250);
   const analyticsSearchValue = useDebounce(searchValue, 1250);
-  // const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
+  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const mapRef = useRef<MapRef>(null);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
@@ -145,34 +154,32 @@ export default function DeckMap() {
 
   const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
 
-  // const onScopeChange = useCallback(() => {
-  //   const point = data[0];
-  //   if (point){
-  //     mapRef.current?.flyTo({ center: [point.lon, point.lat], duration: 2000 });
-  //   }
-  // }, [data]);
-
   useEffect(() => {
-    const point = data[0];
-    if (point) {
-      console.log(point);
-      // mapRef.current?.flyTo({ center: [point.lon, point.lat], duration: 2000 });
-      console.log(mapRef.current);
-      mapRef.current?.fitBounds(
-        [
-          [point.lon, point.lat],
-          [point.lon + 1, point.lat + 1],
-        ],
-        { padding: 40, duration: 1000 },
-      );
+    if (selectedIndex !== undefined && selectedIndex > -1) {
+      const point = data[selectedIndex];
+      if (!point) {
+        return;
+      }
+
+      setViewState((prev) => {
+        return {
+          ...prev,
+          latitude: point.lat,
+          longitude: point.lon,
+          zoom: 17,
+          transitionDuration: 1000,
+        };
+      });
     }
-  }, [data]);
+  }, [selectedIndex, data]);
 
   return (
     <>
       <DeckGL
         // initialViewState={viewState}
-        initialViewState={INITIAL_VIEW_STATE}
+        initialViewState={viewState}
+        // viewState={}
+        // onViewStateChange={(e) => console.log(e)}
         style={{
           height: "100vh",
           width: "100vw",
@@ -182,7 +189,7 @@ export default function DeckMap() {
         getTooltip={({ object }: { object?: DataPoint | null }) => {
           return object
             ? {
-                text: `Property Location: ${object.prettyLocation}
+                text: `Property Location: ${object.prettyLocation.toUpperCase()}
               Grantor: ${object.grantor}
               Grantee: ${object.grantee}`,
               }
@@ -222,8 +229,7 @@ export default function DeckMap() {
       >
         <Map
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          // initialViewState={INITIAL_VIEW_STATE}
-          ref={mapRef}
+          // ref={mapRef}
           // initialViewState={viewState}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
