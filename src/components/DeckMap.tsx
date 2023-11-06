@@ -54,7 +54,9 @@ const cleanedData = data as DataPoint[];
 export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
   // const [searchDialogOpen, setSearchDialogOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
+  const [selectedIndex, setSelectedIndex] = useState<
+    number | undefined | null
+  >();
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
   const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
@@ -69,6 +71,9 @@ export default function DeckMap() {
   const data = useMemo(() => {
     if (!debouncedSearchValue) {
       return cleanedData;
+    }
+    if (typeof selectedIndex === "number") {
+      setSelectedIndex(undefined);
     }
     const searchTokens = debouncedSearchValue.toLowerCase().split(" ");
     const filteredData = cleanedData.filter((entry) => {
@@ -143,7 +148,7 @@ export default function DeckMap() {
 
   const layers = [ScatterPlayLayer];
   const metaData =
-    selectedIndex !== undefined ? data[selectedIndex] : undefined;
+    typeof selectedIndex === "number" ? data[selectedIndex] : undefined;
 
   const darkMapStyle = "mapbox://styles/mapbox/dark-v11";
   const satelliteMapStyle = "mapbox://styles/mapbox/satellite-v9";
@@ -229,7 +234,7 @@ export default function DeckMap() {
             placeholder="Search address, names, etc..."
           />
           <CommandList>
-            {searchValue && <CommandEmpty>No results found.</CommandEmpty>}
+            {/* {searchValue && <CommandEmpty>No results found.</CommandEmpty>} */}
             {debouncedSearchValue &&
               !selectedIndex &&
               data.slice(0, 15).map((entry) => (
