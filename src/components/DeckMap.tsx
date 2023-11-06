@@ -61,6 +61,11 @@ export default function DeckMap() {
   const { isLoaded, isSignedIn, user } = useUser();
   const debouncedSearchValue = useDebounce(searchValue, 250);
   const analyticsSearchValue = useDebounce(searchValue, 1250);
+
+  const darkMapStyle = "mapbox://styles/mapbox/dark-v11";
+  const satelliteMapStyle = "mapbox://styles/mapbox/satellite-v9";
+
+  const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
@@ -91,6 +96,13 @@ export default function DeckMap() {
     }
   }, [analyticsSearchValue]);
 
+  const blue700 = [29, 78, 216];
+  const orange500 = [249, 115, 22];
+  const rose300 = [253, 164, 175];
+  const rose500 = [244, 63, 94];
+
+  const slate300 = [203, 213, 225];
+
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
     data: data,
@@ -111,56 +123,32 @@ export default function DeckMap() {
     getPosition: (d) => [d.lon, d.lat],
     getRadius: (d, context) => {
       if (selectedIndex !== undefined && context.index === selectedIndex) {
-        return 2;
+        return 1.2;
       }
       return 1;
     },
+    // @ts-ignore ignore color
     getFillColor: (d, context) => {
       if (selectedIndex !== undefined && context.index === selectedIndex) {
-        // return [255, 255, 204]; // yelllow on select
-        // return [170, 29, 1]; // red on select
-        return [255, 108, 34]; // orange on select
+        return isSatelliteMapStyle ? blue700 : orange500; // orange on select
       }
 
-      // return [202, 179, 229]; // light purple default
-      // return [255, 108, 34]; // orange default
-      return [0, 0, 0]; // black default
+      return isSatelliteMapStyle ? rose300 : slate300; // light black
     },
     updateTriggers: {
-      getFillColor: [selectedIndex],
+      getFillColor: [selectedIndex, isSatelliteMapStyle],
       getRadius: [selectedIndex],
     },
     // highlightedObjectIndex: selectedIndex,
     autoHighlight: true,
+    highlightColor: () => {
+      return isSatelliteMapStyle ? [244, 63, 94] : [100, 116, 139];
+    },
   });
 
   const layers = [ScatterPlayLayer];
   const metaData =
     selectedIndex !== undefined ? data[selectedIndex] : undefined;
-
-  const darkMapStyle = "mapbox://styles/mapbox/dark-v11";
-  const satelliteMapStyle = "mapbox://styles/mapbox/satellite-v9";
-
-  const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
-
-  useEffect(() => {
-    if (selectedIndex !== undefined && selectedIndex > -1) {
-      const point = data[selectedIndex];
-      if (!point) {
-        return;
-      }
-
-      setViewState((prev) => {
-        return {
-          ...prev,
-          latitude: point.lat,
-          longitude: point.lon,
-          zoom: 17,
-          transitionDuration: 1000,
-        };
-      });
-    }
-  }, [selectedIndex, data]);
 
   return (
     <>
