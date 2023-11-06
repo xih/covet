@@ -4,7 +4,7 @@ const sourceFile = "public/final_properties_v1_2.json";
 const outputFile = "public/properties_v1_3.json";
 
 function cleanData(data) {
-  return data.map((d) => {
+  return data.map((d, idx) => {
     const first = d.propertyLocation.slice(0, 4);
     const middle = d.propertyLocation.slice(4, -4);
     const last = d.propertyLocation.slice(-4);
@@ -22,6 +22,7 @@ function cleanData(data) {
     return {
       ...d,
       prettyLocation,
+      id: idx,
     };
   });
 }

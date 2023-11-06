@@ -14,10 +14,11 @@ import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
 import { useDebounce } from "~/lib/hooks";
 import { Button } from "./ui/button";
-import { Moon, Map as LucideMap, Search } from "lucide-react";
+import { Moon, Map as LucideMap, Search, Calculator, User } from "lucide-react";
 
 import {
   Command,
+  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
@@ -36,6 +37,7 @@ type DataPoint = {
   grantor: string;
   grantee: string;
   prettyLocation: string;
+  id: number;
 };
 
 // Viewport settings
@@ -51,6 +53,7 @@ const cleanedData = data as DataPoint[];
 
 export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
+  // const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
   const router = useRouter();
@@ -62,12 +65,11 @@ export default function DeckMap() {
   const increaseAddressCounter = useMapStore(
     (state) => state.increaseAddressCounter,
   );
-  const remainingClickMessage =
-    addressCounter >= 5
-      ? "Sign in, old sport"
-      : `${5 - addressCounter} clicks left`;
 
   const data = useMemo(() => {
+    if (!debouncedSearchValue) {
+      return cleanedData;
+    }
     const searchTokens = debouncedSearchValue.toLowerCase().split(" ");
     const filteredData = cleanedData.filter((entry) => {
       return searchTokens.every(
@@ -215,35 +217,62 @@ export default function DeckMap() {
           isOpen={metaData !== undefined}
         />
       </DeckGL>
-      <div className="absolute z-0 flex w-full flex-col gap-x-8 gap-y-2 p-4 md:flex-row md:p-8">
+      <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
         <Image src={PostCovetLogo as string} alt="postcovet" />
-
-        <div className="flex flex-col md:flex-row">
-          <Button
-            variant="secondary"
-            onClick={() => {
-              console.log("hi");
-            }}
-          >
-            <Search className="h-4 w-4" />
-            <CommandInput placeholder="Type a command or search..." />
-          </Button>
-
-          {/* <Input
+        <Command
+          shouldFilter={false}
+          className="w-full rounded-lg border shadow-md sm:max-w-xs"
+        >
+          <CommandInput
+            onValueChange={setSearchValue}
             value={searchValue}
-            onChange={(e) => {
-              setSearchValue(e.target.value);
-              setSelectedIndex(undefined);
-            }}
-            placeholder="Search by name"
-          /> */}
-          <div className="left-full top-0 flex h-full justify-between whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
-            {/* <span>({data.length} results)</span> */}
-            <span className="sm:hidden" suppressHydrationWarning>
-              {isSignedIn ? null : remainingClickMessage}
-            </span>
-          </div>
-        </div>
+            placeholder="Search address, names, etc..."
+          />
+          <CommandList>
+            {searchValue && <CommandEmpty>No results found.</CommandEmpty>}
+            {debouncedSearchValue &&
+              !selectedIndex &&
+              data.slice(0, 15).map((entry) => (
+                <CommandItem
+                  key={entry.prettyLocation}
+                  onSelect={() => {
+                    setSelectedIndex(entry.id);
+                    console.log(entry);
+                  }}
+                >
+                  <span>{entry.prettyLocation}</span>
+                </CommandItem>
+              ))}
+            {/* <CommandGroup heading="Suggestions">
+              <CommandItem>
+                <span>Calendar</span>
+              </CommandItem>
+              <CommandItem>
+                <span>Search Emoji</span>
+              </CommandItem>
+              <CommandItem>
+                <Calculator className="mr-2 h-4 w-4" />
+                <span>Calculator</span>
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading="Settings">
+              <CommandItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+                <CommandShortcut>⌘P</CommandShortcut>
+              </CommandItem>
+              <CommandItem>
+                <span>Billing</span>
+                <CommandShortcut>⌘B</CommandShortcut>
+              </CommandItem>
+              <CommandItem>
+                <span>Settings</span>
+                <CommandShortcut>⌘S</CommandShortcut>
+              </CommandItem>
+            </CommandGroup> */}
+          </CommandList>
+        </Command>
       </div>
       <div className="absolute bottom-0 left-0 z-0 w-full p-4">
         <Button

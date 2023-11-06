@@ -37,10 +37,6 @@ export default function Home() {
   });
 
   const addressCounter = useMapStore((state) => state.addressCounter);
-  const remainingClickMessage =
-    addressCounter >= 5
-      ? "Sign in, old sport"
-      : `${5 - addressCounter} clicks left`;
 
   const { isSignedIn, user, isLoaded } = useUser();
   const { signIn } = useSignIn();
@@ -77,12 +73,6 @@ export default function Home() {
             <UserButton afterSignOutUrl="/" />
           ) : (
             <div className="flex items-center">
-              <span
-                suppressHydrationWarning
-                className="mr-4 hidden text-white sm:inline"
-              >
-                {remainingClickMessage}
-              </span>
               <SignInButton mode="modal">
                 <Button variant="outline" className="">
                   Sign In
