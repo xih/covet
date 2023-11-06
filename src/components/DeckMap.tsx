@@ -1,5 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-import Map from "react-map-gl";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Map, { MapRef } from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
@@ -40,13 +46,22 @@ type DataPoint = {
   id: number;
 };
 
-// Viewport settings
-const INITIAL_VIEW_STATE = {
+type ViewState = {
+  longitude: number;
+  latitude: number;
+  zoom: number;
+  pitch: number;
+  bearing: number;
+  transitionDuration: number;
+};
+
+const INITIAL_VIEW_STATE: ViewState = {
   longitude: -122.41669,
   latitude: 37.7853,
   zoom: 13,
   pitch: 0,
   bearing: 0,
+  transitionDuration: 1000,
 };
 
 const cleanedData = data as DataPoint[];
@@ -62,6 +77,12 @@ export default function DeckMap() {
   const { isLoaded, isSignedIn, user } = useUser();
   const debouncedSearchValue = useDebounce(searchValue, 250);
   const analyticsSearchValue = useDebounce(searchValue, 1250);
+
+  const darkMapStyle = "mapbox://styles/mapbox/dark-v11";
+  const satelliteMapStyle = "mapbox://styles/mapbox/satellite-v9";
+
+  const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
+  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
   const increaseAddressCounter = useMapStore(
@@ -93,72 +114,83 @@ export default function DeckMap() {
     }
   }, [analyticsSearchValue]);
 
+  const blue700 = [29, 78, 216];
+  const orange500 = [249, 115, 22];
+  const rose300 = [253, 164, 175];
+  const rose500 = [244, 63, 94];
+
+  const slate300 = [203, 213, 225];
+
   const ScatterPlayLayer = new ScatterplotLayer<DataPoint>({
     id: "scatterplot-layer",
     data: data,
     pickable: true,
     opacity: 0.8,
     filled: true,
-    radiusScale: data.length > 100000 ? 5 : data.length > 10000 ? 10 : 20,
+    radiusScale:
+      data.length > 100000
+        ? 5
+        : data.length > 10000
+        ? 10
+        : data.length > 100
+        ? 20
+        : 50,
     radiusMinPixels: 1,
     radiusMaxPixels: 100,
     lineWidthMinPixels: 0,
     getPosition: (d) => [d.lon, d.lat],
-    getRadius: () => 1,
-    getFillColor: (d, context) => {
-      const value = d.block;
+    getRadius: (d, context) => {
       if (selectedIndex !== undefined && context.index === selectedIndex) {
-        return [255, 255, 204];
+        return 1.2;
       }
-      if (value <= 1184) {
-        if (hoveredObject && hoveredObject === d) {
-          return [100, 24, 70];
-        }
-        return [90, 24, 70];
-      } else if (value > 1184 && value <= 2116) {
-        if (hoveredObject && hoveredObject === d) {
-          return [115, 24, 70];
-        }
-        return [114, 12, 63];
-      } else if (value > 2116 && value <= 3156) {
-        if (hoveredObject && hoveredObject === d) {
-          return [205, 1, 56];
-        }
-        return [199, 1, 56];
-      } else if (value > 3156 && value <= 4283) {
-        if (hoveredObject && hoveredObject === d) {
-          return [232, 97, 27];
-        }
-        return [227, 97, 27];
-      } else if (value > 4283 && value <= 6438) {
-        if (hoveredObject && hoveredObject === d) {
-          return [246, 146, 14];
-        }
-        return [241, 146, 14];
+      return 1;
+    },
+    // @ts-ignore ignore color
+    getFillColor: (d, context) => {
+      if (selectedIndex !== undefined && context.index === selectedIndex) {
+        return isSatelliteMapStyle ? blue700 : orange500; // orange on select
       }
 
-      return [225, 195, 2];
+      return isSatelliteMapStyle ? rose300 : slate300; // light black
     },
     updateTriggers: {
-      getFillColor: [selectedIndex],
+      getFillColor: [selectedIndex, isSatelliteMapStyle],
+      getRadius: [selectedIndex],
     },
     // highlightedObjectIndex: selectedIndex,
     autoHighlight: true,
+    highlightColor: () => {
+      return isSatelliteMapStyle ? [244, 63, 94] : [100, 116, 139];
+    },
   });
 
   const layers = [ScatterPlayLayer];
   const metaData =
     typeof selectedIndex === "number" ? data[selectedIndex] : undefined;
 
-  const darkMapStyle = "mapbox://styles/mapbox/dark-v11";
-  const satelliteMapStyle = "mapbox://styles/mapbox/satellite-v9";
+  useEffect(() => {
+    if (selectedIndex !== undefined && selectedIndex > -1) {
+      const point = data[selectedIndex];
+      if (!point) {
+        return;
+      }
 
-  const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
+      setViewState((prev) => {
+        return {
+          ...prev,
+          latitude: point.lat,
+          longitude: point.lon,
+          zoom: 17,
+          transitionDuration: 1000,
+        };
+      });
+    }
+  }, [selectedIndex, data]);
 
   return (
     <>
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
+        initialViewState={viewState}
         style={{
           height: "100vh",
           width: "100vw",
@@ -168,7 +200,7 @@ export default function DeckMap() {
         getTooltip={({ object }: { object?: DataPoint | null }) => {
           return object
             ? {
-                text: `Property Location: ${object.prettyLocation}
+                text: `Property Location: ${object.prettyLocation.toUpperCase()}
               Grantor: ${object.grantor}
               Grantee: ${object.grantee}`,
               }
@@ -183,6 +215,7 @@ export default function DeckMap() {
           }
 
           if (data.index === -1) return;
+          const pointMetaData = data.object as DataPoint;
 
           if (addressCounter > 4 && !isSignedIn) {
             void router.replace("/sign-in");
@@ -191,7 +224,6 @@ export default function DeckMap() {
             increaseAddressCounter(1);
           }
 
-          const pointMetaData = data.object as DataPoint;
           mixpanel.track("click address", {
             "Property name": pointMetaData?.propertyLocation,
             Grantor: pointMetaData?.grantor,
@@ -203,11 +235,6 @@ export default function DeckMap() {
       >
         <Map
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          initialViewState={{
-            longitude: -122.4,
-            latitude: 37.8,
-            zoom: 14,
-          }}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
         <Modal

@@ -63,10 +63,37 @@ export const Modal = (props: ModalProps) => {
         side={window.innerWidth > 800 ? "right" : "bottom"}
       >
         <SheetHeader>
-          <SheetTitle className="text-left"> {prettyLocation}</SheetTitle>
+          <SheetTitle className="text-left">
+            <p key={prettyLocation} className="underline">
+              <TooltipProvider>
+                <Tooltip delayDuration={200}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={`https://www.google.com/search?q=${encodeURIComponent(
+                        prettyLocation,
+                      )}`}
+                      target="_blank"
+                      onClick={() => {
+                        mixpanel.track("search address on google", {
+                          type: "address",
+                          location: prettyLocation,
+                        });
+                      }}
+                    >
+                      {prettyLocation}
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Search on Google</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </p>
+          </SheetTitle>
+          <br />
           <SheetDescription className="text-left">
             <p>
-              Grantee:{" "}
+              Current Owner:{" "}
               <span className="font-medium text-slate-900">
                 {grantee?.split(",").map((name) => (
                   <p key={name} className="underline">
@@ -100,7 +127,7 @@ export const Modal = (props: ModalProps) => {
             <br />
 
             <p>
-              Grantor:{" "}
+              Previous Owner:{" "}
               <span className="font-medium text-slate-900">
                 {grantor?.split(",").map((name) => {
                   return (
@@ -133,10 +160,7 @@ export const Modal = (props: ModalProps) => {
                   );
                 })}
               </span>{" "}
-            </p>
-            <br />
-
-            <p>
+              <br />
               Coordinates:
               <br />
               <span className="font-medium text-slate-900">
@@ -144,6 +168,92 @@ export const Modal = (props: ModalProps) => {
               </span>
             </p>
             <br />
+            <p>Find on:</p>
+            <div className="flex flex-col justify-start gap-2">
+              <div className="flex grow flex-row gap-1">
+                <Button variant="outline" className="grow">
+                  <Link
+                    href={`https://www.google.com/search?q=${encodeURIComponent(
+                      "zillow" + prettyLocation + "san francisco",
+                    )}`}
+                    target="_blank"
+                    onClick={() => {
+                      mixpanel.track("searched address", {
+                        type: "zillow",
+                        address: prettyLocation,
+                      });
+                    }}
+                  >
+                    Zillow
+                  </Link>
+                </Button>
+
+                <Button variant="outline">
+                  <Link
+                    href={`https://www.google.com/search?q=${encodeURIComponent(
+                      "trulia" + prettyLocation + "san francisco",
+                    )}`}
+                    target="_blank"
+                    onClick={() => {
+                      mixpanel.track("searched address", {
+                        type: "trulia",
+                        address: prettyLocation,
+                      });
+                    }}
+                  >
+                    Trulia
+                  </Link>
+                </Button>
+                <Button variant="outline">
+                  <Link
+                    href={`https://www.google.com/search?q=${encodeURIComponent(
+                      "redfin" + prettyLocation + "san francisco",
+                    )}`}
+                    target="_blank"
+                    onClick={() => {
+                      mixpanel.track("searched address", {
+                        type: "redfin",
+                        address: prettyLocation,
+                      });
+                    }}
+                  >
+                    Redfin
+                  </Link>
+                </Button>
+                <Button variant="outline">
+                  <Link
+                    href={`https://www.google.com/search?q=${encodeURIComponent(
+                      "compass" + prettyLocation + "san francisco",
+                    )}`}
+                    target="_blank"
+                    onClick={() => {
+                      mixpanel.track("searched address", {
+                        type: "compass",
+                        address: prettyLocation,
+                      });
+                    }}
+                  >
+                    Compass
+                  </Link>
+                </Button>
+              </div>
+              <Button variant="outline">
+                <Link
+                  href={`https://maps.google.com/?q=${encodeURIComponent(
+                    prettyLocation + "san francisco",
+                  )}`}
+                  target="_blank"
+                  onClick={() => {
+                    mixpanel.track("searched address", {
+                      type: "google maps",
+                      address: prettyLocation,
+                    });
+                  }}
+                >
+                  Google Maps
+                </Link>
+              </Button>
+            </div>
             {/* <Link
               href={`https://www.google.com/search?q=${grantee}`}
               target="_blank"
