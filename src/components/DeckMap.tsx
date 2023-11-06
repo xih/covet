@@ -41,7 +41,7 @@ type ViewState = {
   bearing: number;
   transitionDuration: number;
 };
-// Viewport settings
+
 const INITIAL_VIEW_STATE: ViewState = {
   longitude: -122.41669,
   latitude: 37.7853,
@@ -62,7 +62,6 @@ export default function DeckMap() {
   const debouncedSearchValue = useDebounce(searchValue, 250);
   const analyticsSearchValue = useDebounce(searchValue, 1250);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
-  const mapRef = useRef<MapRef>(null);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
   const increaseAddressCounter = useMapStore(
@@ -176,10 +175,7 @@ export default function DeckMap() {
   return (
     <>
       <DeckGL
-        // initialViewState={viewState}
         initialViewState={viewState}
-        // viewState={}
-        // onViewStateChange={(e) => console.log(e)}
         style={{
           height: "100vh",
           width: "100vw",
@@ -206,11 +202,6 @@ export default function DeckMap() {
           if (data.index === -1) return;
           const pointMetaData = data.object as DataPoint;
 
-          mapRef.current?.flyTo({
-            center: [pointMetaData.lon, pointMetaData.lat],
-            duration: 2000,
-          });
-
           if (addressCounter > 4 && !isSignedIn) {
             void router.replace("/sign-in");
             return;
@@ -229,8 +220,6 @@ export default function DeckMap() {
       >
         <Map
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          // ref={mapRef}
-          // initialViewState={viewState}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
         <Modal
