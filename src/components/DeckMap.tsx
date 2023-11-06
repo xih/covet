@@ -1,5 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-import Map from "react-map-gl";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Map, { MapRef } from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
@@ -27,13 +33,22 @@ type DataPoint = {
   prettyLocation: string;
 };
 
-// Viewport settings
-const INITIAL_VIEW_STATE = {
+type ViewState = {
+  longitude: number;
+  latitude: number;
+  zoom: number;
+  pitch: number;
+  bearing: number;
+  transitionDuration: number;
+};
+
+const INITIAL_VIEW_STATE: ViewState = {
   longitude: -122.41669,
   latitude: 37.7853,
   zoom: 13,
   pitch: 0,
   bearing: 0,
+  transitionDuration: 1000,
 };
 
 const cleanedData = data as DataPoint[];
@@ -46,6 +61,7 @@ export default function DeckMap() {
   const { isLoaded, isSignedIn, user } = useUser();
   const debouncedSearchValue = useDebounce(searchValue, 250);
   const analyticsSearchValue = useDebounce(searchValue, 1250);
+  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
   const increaseAddressCounter = useMapStore(
@@ -127,10 +143,29 @@ export default function DeckMap() {
 
   const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
 
+  useEffect(() => {
+    if (selectedIndex !== undefined && selectedIndex > -1) {
+      const point = data[selectedIndex];
+      if (!point) {
+        return;
+      }
+
+      setViewState((prev) => {
+        return {
+          ...prev,
+          latitude: point.lat,
+          longitude: point.lon,
+          zoom: 17,
+          transitionDuration: 1000,
+        };
+      });
+    }
+  }, [selectedIndex, data]);
+
   return (
     <>
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
+        initialViewState={viewState}
         style={{
           height: "100vh",
           width: "100vw",
@@ -140,7 +175,7 @@ export default function DeckMap() {
         getTooltip={({ object }: { object?: DataPoint | null }) => {
           return object
             ? {
-                text: `Property Location: ${object.prettyLocation}
+                text: `Property Location: ${object.prettyLocation.toUpperCase()}
               Grantor: ${object.grantor}
               Grantee: ${object.grantee}`,
               }
@@ -155,6 +190,7 @@ export default function DeckMap() {
           }
 
           if (data.index === -1) return;
+          const pointMetaData = data.object as DataPoint;
 
           if (addressCounter > 4 && !isSignedIn) {
             void router.replace("/sign-in");
@@ -163,7 +199,6 @@ export default function DeckMap() {
             increaseAddressCounter(1);
           }
 
-          const pointMetaData = data.object as DataPoint;
           mixpanel.track("click address", {
             "Property name": pointMetaData?.propertyLocation,
             Grantor: pointMetaData?.grantor,
@@ -175,11 +210,6 @@ export default function DeckMap() {
       >
         <Map
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          initialViewState={{
-            longitude: -122.4,
-            latitude: 37.8,
-            zoom: 14,
-          }}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
         <Modal
