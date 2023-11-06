@@ -150,6 +150,25 @@ export default function DeckMap() {
   const metaData =
     selectedIndex !== undefined ? data[selectedIndex] : undefined;
 
+  useEffect(() => {
+    if (selectedIndex !== undefined && selectedIndex > -1) {
+      const point = data[selectedIndex];
+      if (!point) {
+        return;
+      }
+
+      setViewState((prev) => {
+        return {
+          ...prev,
+          latitude: point.lat,
+          longitude: point.lon,
+          zoom: 17,
+          transitionDuration: 1000,
+        };
+      });
+    }
+  }, [selectedIndex, data]);
+
   return (
     <>
       <DeckGL
