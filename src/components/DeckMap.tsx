@@ -14,7 +14,18 @@ import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
 import { useDebounce } from "~/lib/hooks";
 import { Button } from "./ui/button";
-import { Moon, Map as LucideMap } from "lucide-react";
+import { Moon, Map as LucideMap, Search } from "lucide-react";
+
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from "~/components/ui/command";
 
 type DataPoint = {
   block: number;
@@ -208,16 +219,26 @@ export default function DeckMap() {
         <Image src={PostCovetLogo as string} alt="postcovet" />
 
         <div className="flex flex-col md:flex-row">
-          <Input
+          <Button
+            variant="secondary"
+            onClick={() => {
+              console.log("hi");
+            }}
+          >
+            <Search className="h-4 w-4" />
+            <CommandInput placeholder="Type a command or search..." />
+          </Button>
+
+          {/* <Input
             value={searchValue}
             onChange={(e) => {
               setSearchValue(e.target.value);
               setSelectedIndex(undefined);
             }}
             placeholder="Search by name"
-          />
+          /> */}
           <div className="left-full top-0 flex h-full justify-between whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
-            <span>({data.length} results)</span>
+            {/* <span>({data.length} results)</span> */}
             <span className="sm:hidden" suppressHydrationWarning>
               {isSignedIn ? null : remainingClickMessage}
             </span>
