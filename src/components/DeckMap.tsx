@@ -1,18 +1,10 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Map, { MapRef } from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
-
 import data from "../../public/properties_v1_3.json";
 import { Modal } from "~/shadcn/components/Modal";
-import { Input } from "~/components/ui/input";
 import PostCovetLogo from "/public/Post-Covet_LOGO_SVG.svg";
 import Image from "next/image";
 import { useMapStore } from "~/store/store";
@@ -20,7 +12,7 @@ import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
 import { useDebounce } from "~/lib/hooks";
 import { Button } from "./ui/button";
-import { Moon, Map as LucideMap, Search, Calculator, User } from "lucide-react";
+import { Moon, Map as LucideMap } from "lucide-react";
 
 import {
   Command,
@@ -89,12 +81,16 @@ export default function DeckMap() {
     (state) => state.increaseAddressCounter,
   );
 
+  const selectedPointData = useMemo(() => {
+    return typeof selectedIndex === "number"
+      ? cleanedData[selectedIndex]
+      : null;
+  }, [selectedIndex]);
+  console.log(selectedPointData);
+
   const data = useMemo(() => {
     if (!debouncedSearchValue) {
       return cleanedData;
-    }
-    if (typeof selectedIndex === "number") {
-      setSelectedIndex(undefined);
     }
     const searchTokens = debouncedSearchValue.toLowerCase().split(" ");
     const filteredData = cleanedData.filter((entry) => {
@@ -113,6 +109,10 @@ export default function DeckMap() {
       mixpanel.track("search", { query: analyticsSearchValue });
     }
   }, [analyticsSearchValue]);
+
+  // useEffect(() => {
+  //   setSelectedIndex(null);
+  // }, [searchValue]);
 
   const blue700 = [29, 78, 216];
   const orange500 = [249, 115, 22];
@@ -165,15 +165,16 @@ export default function DeckMap() {
   });
 
   const layers = [ScatterPlayLayer];
-  const metaData =
-    typeof selectedIndex === "number" ? data[selectedIndex] : undefined;
 
   useEffect(() => {
-    if (selectedIndex !== undefined && selectedIndex > -1) {
-      const point = data[selectedIndex];
+    console.log("selected index changed: ", selectedIndex);
+    if (typeof selectedIndex === "number" && selectedIndex > -1) {
+      const point = cleanedData[selectedIndex];
       if (!point) {
+        console.error("point not found");
         return;
       }
+      console.log("updating view state");
 
       setViewState((prev) => {
         return {
@@ -210,7 +211,7 @@ export default function DeckMap() {
         layers={layers}
         onClick={(data) => {
           if (!data.layer) {
-            setSelectedIndex(-1);
+            setSelectedIndex(null);
             return;
           }
 
@@ -229,7 +230,7 @@ export default function DeckMap() {
             Grantor: pointMetaData?.grantor,
             Grantee: pointMetaData?.grantee,
           });
-          setSelectedIndex(data.index);
+          setSelectedIndex(pointMetaData.id);
           return;
         }}
       >
@@ -238,15 +239,15 @@ export default function DeckMap() {
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
         <Modal
-          location={metaData?.propertyLocation}
-          grantee={metaData?.grantee}
-          grantor={metaData?.grantor}
-          lat={metaData?.lat}
-          lon={metaData?.lon}
+          location={selectedPointData?.propertyLocation}
+          grantee={selectedPointData?.grantee}
+          grantor={selectedPointData?.grantor}
+          lat={selectedPointData?.lat}
+          lon={selectedPointData?.lon}
           onOpenChange={(open) => {
             setSelectedIndex(undefined);
           }}
-          isOpen={metaData !== undefined}
+          isOpen={!!selectedPointData}
         />
       </DeckGL>
       <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
@@ -256,9 +257,17 @@ export default function DeckMap() {
           className="w-full rounded-lg border shadow-md sm:max-w-xs"
         >
           <CommandInput
-            onValueChange={setSearchValue}
+            onValueChange={(val) => {
+              setSearchValue(val);
+              setSelectedIndex(null);
+            }}
             value={searchValue}
-            placeholder="Search address, names, etc..."
+            placeholder="Search address or name"
+            showClearButton={!!searchValue}
+            handleClear={() => {
+              setSearchValue("");
+              setSelectedIndex(null);
+            }}
           />
           <CommandList>
             {/* {searchValue && <CommandEmpty>No results found.</CommandEmpty>} */}
@@ -266,8 +275,9 @@ export default function DeckMap() {
               !selectedIndex &&
               data.slice(0, 15).map((entry) => (
                 <CommandItem
-                  key={entry.prettyLocation}
+                  key={entry.id}
                   onSelect={() => {
+                    setSearchValue(entry.prettyLocation);
                     setSelectedIndex(entry.id);
                     console.log(entry);
                   }}
