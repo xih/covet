@@ -1,18 +1,10 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Map, { MapRef } from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
-
 import data from "../../public/properties_v1_3.json";
 import { Modal } from "~/shadcn/components/Modal";
-import { Input } from "~/components/ui/input";
 import PostCovetLogo from "/public/Post-Covet_LOGO_SVG.svg";
 import Image from "next/image";
 import { useMapStore } from "~/store/store";
@@ -21,6 +13,19 @@ import { useUser } from "@clerk/nextjs";
 import { useDebounce } from "~/lib/hooks";
 import { Button } from "./ui/button";
 import { Moon, Map as LucideMap } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
+
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from "~/components/ui/command";
 
 type DataPoint = {
   block: number;
@@ -31,6 +36,7 @@ type DataPoint = {
   grantor: string;
   grantee: string;
   prettyLocation: string;
+  id: number;
 };
 
 type ViewState = {
@@ -55,13 +61,16 @@ const cleanedData = data as DataPoint[];
 
 export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
-  const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
+  // const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<
+    number | undefined | null
+  >();
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
   const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
+  const [suggestionsVisible, setSuggestionsVisible] = useState(false);
   const debouncedSearchValue = useDebounce(searchValue, 250);
   const analyticsSearchValue = useDebounce(searchValue, 1250);
-
   const darkMapStyle = "mapbox://styles/mapbox/dark-v11";
   const satelliteMapStyle = "mapbox://styles/mapbox/satellite-v9";
 
@@ -72,18 +81,23 @@ export default function DeckMap() {
   const increaseAddressCounter = useMapStore(
     (state) => state.increaseAddressCounter,
   );
-  const remainingClickMessage =
-    addressCounter >= 5
-      ? "Sign in, old sport"
-      : `${5 - addressCounter} clicks left`;
+
+  const selectedPointData = useMemo(() => {
+    return typeof selectedIndex === "number"
+      ? cleanedData[selectedIndex]
+      : null;
+  }, [selectedIndex]);
 
   const data = useMemo(() => {
-    const searchTokens = debouncedSearchValue.toLowerCase().split(" ");
+    if (!debouncedSearchValue) {
+      return cleanedData;
+    }
+    const searchTokens = debouncedSearchValue.toUpperCase().split(" ");
     const filteredData = cleanedData.filter((entry) => {
       return searchTokens.every(
         (token) =>
-          entry.grantee.toLowerCase().includes(token) ||
-          entry.grantor.toLowerCase().includes(token) ||
+          entry.grantee.toUpperCase().includes(token) ||
+          entry.grantor.toUpperCase().includes(token) ||
           entry.prettyLocation.includes(token),
       );
     });
@@ -95,6 +109,10 @@ export default function DeckMap() {
       mixpanel.track("search", { query: analyticsSearchValue });
     }
   }, [analyticsSearchValue]);
+
+  // useEffect(() => {
+  //   setSelectedIndex(null);
+  // }, [searchValue]);
 
   const blue700 = [29, 78, 216];
   const orange500 = [249, 115, 22];
@@ -147,15 +165,16 @@ export default function DeckMap() {
   });
 
   const layers = [ScatterPlayLayer];
-  const metaData =
-    selectedIndex !== undefined ? data[selectedIndex] : undefined;
 
   useEffect(() => {
-    if (selectedIndex !== undefined && selectedIndex > -1) {
-      const point = data[selectedIndex];
+    console.log("selected index changed: ", selectedIndex);
+    if (typeof selectedIndex === "number" && selectedIndex > -1) {
+      const point = cleanedData[selectedIndex];
       if (!point) {
+        console.error("point not found");
         return;
       }
+      console.log("updating view state");
 
       setViewState((prev) => {
         return {
@@ -191,8 +210,9 @@ export default function DeckMap() {
         controller={true}
         layers={layers}
         onClick={(data) => {
+          setSuggestionsVisible(false);
           if (!data.layer) {
-            setSelectedIndex(-1);
+            setSelectedIndex(null);
             return;
           }
 
@@ -211,7 +231,7 @@ export default function DeckMap() {
             Grantor: pointMetaData?.grantor,
             Grantee: pointMetaData?.grantee,
           });
-          setSelectedIndex(data.index);
+          setSelectedIndex(pointMetaData.id);
           return;
         }}
       >
@@ -220,36 +240,72 @@ export default function DeckMap() {
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
         <Modal
-          location={metaData?.propertyLocation}
-          grantee={metaData?.grantee}
-          grantor={metaData?.grantor}
-          lat={metaData?.lat}
-          lon={metaData?.lon}
+          location={selectedPointData?.propertyLocation}
+          grantee={selectedPointData?.grantee}
+          grantor={selectedPointData?.grantor}
+          lat={selectedPointData?.lat}
+          lon={selectedPointData?.lon}
           onOpenChange={(open) => {
             setSelectedIndex(undefined);
           }}
-          isOpen={metaData !== undefined}
+          isOpen={!!selectedPointData}
         />
       </DeckGL>
-      <div className="absolute z-0 flex w-full flex-col gap-x-8 gap-y-2 p-4 md:flex-row md:p-8">
+      <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
         <Image src={PostCovetLogo as string} alt="postcovet" />
-
-        <div className="flex flex-col md:flex-row">
-          <Input
-            value={searchValue}
-            onChange={(e) => {
-              setSearchValue(e.target.value);
-              setSelectedIndex(undefined);
+        <Command
+          shouldFilter={false}
+          className="w-full rounded-lg border shadow-md sm:max-w-xs"
+        >
+          <CommandInput
+            onValueChange={(val) => {
+              setSearchValue(val);
+              setSelectedIndex(null);
             }}
-            placeholder="Search by name"
+            value={searchValue}
+            placeholder="Search address or name"
+            showClearButton={!!searchValue}
+            handleClear={() => {
+              setSearchValue("");
+              setSelectedIndex(null);
+            }}
+            // onBlur={() => setInputActive(false)}
+            onFocus={() => setSuggestionsVisible(true)}
           />
-          <div className="left-full top-0 flex h-full justify-between whitespace-nowrap pt-2 text-white md:items-center md:justify-center md:p-2">
-            <span className="text-slate-100">{data.length} results</span>
-            <span className="sm:hidden" suppressHydrationWarning>
-              {isSignedIn ? null : remainingClickMessage}
-            </span>
-          </div>
-        </div>
+          <CommandList>
+            {/* {searchValue && <CommandEmpty>No results found.</CommandEmpty>} */}
+            {debouncedSearchValue &&
+              searchValue &&
+              suggestionsVisible &&
+              !selectedIndex &&
+              data.slice(0, 15).map((entry) => (
+                <CommandItem
+                  key={entry.id}
+                  onSelect={() => {
+                    setSearchValue(entry.prettyLocation);
+                    setSelectedIndex(entry.id);
+                    console.log(entry);
+                  }}
+                >
+                  <div className="flex flex-col">
+                    <span>{entry.prettyLocation.toUpperCase()}</span>
+                    {/* <span className="text-xs">{entry.grantee}</span> */}
+                    <div className="flex flex-wrap">
+                      {entry.grantee.split(",").map((grantee) => {
+                        return (
+                          <span key={grantee}>
+                            <Badge variant="outline">
+                              <span className="text-[10px]">{grantee}</span>
+                            </Badge>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </CommandItem>
+              ))}
+          </CommandList>
+        </Command>
       </div>
       <div className="absolute bottom-0 left-0 z-0 w-full p-4">
         <Button
