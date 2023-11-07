@@ -17,7 +17,7 @@ function cleanData(data) {
       .join(" ")
       .replace(/\s+/g, " ")
       .trim()
-      .toLowerCase();
+      .toUpperCase();
 
     return {
       ...d,

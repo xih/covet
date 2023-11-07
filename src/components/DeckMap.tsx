@@ -92,12 +92,12 @@ export default function DeckMap() {
     if (!debouncedSearchValue) {
       return cleanedData;
     }
-    const searchTokens = debouncedSearchValue.toLowerCase().split(" ");
+    const searchTokens = debouncedSearchValue.toUpperCase().split(" ");
     const filteredData = cleanedData.filter((entry) => {
       return searchTokens.every(
         (token) =>
-          entry.grantee.toLowerCase().includes(token) ||
-          entry.grantor.toLowerCase().includes(token) ||
+          entry.grantee.toUpperCase().includes(token) ||
+          entry.grantor.toUpperCase().includes(token) ||
           entry.prettyLocation.includes(token),
       );
     });
@@ -272,6 +272,7 @@ export default function DeckMap() {
           <CommandList>
             {/* {searchValue && <CommandEmpty>No results found.</CommandEmpty>} */}
             {debouncedSearchValue &&
+              searchValue &&
               !selectedIndex &&
               data.slice(0, 15).map((entry) => (
                 <CommandItem
@@ -282,7 +283,10 @@ export default function DeckMap() {
                     console.log(entry);
                   }}
                 >
-                  <span>{entry.prettyLocation}</span>
+                  <div className="flex flex-col">
+                    <span>{entry.prettyLocation.toUpperCase()}</span>
+                    <span className="text-xs">{entry.grantee}</span>
+                  </div>
                 </CommandItem>
               ))}
             {/* <CommandGroup heading="Suggestions">
