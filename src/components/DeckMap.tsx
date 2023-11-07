@@ -67,9 +67,9 @@ export default function DeckMap() {
   const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
   const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
+  const [suggestionsVisible, setSuggestionsVisible] = useState(false);
   const debouncedSearchValue = useDebounce(searchValue, 250);
   const analyticsSearchValue = useDebounce(searchValue, 1250);
-
   const darkMapStyle = "mapbox://styles/mapbox/dark-v11";
   const satelliteMapStyle = "mapbox://styles/mapbox/satellite-v9";
 
@@ -86,7 +86,6 @@ export default function DeckMap() {
       ? cleanedData[selectedIndex]
       : null;
   }, [selectedIndex]);
-  console.log(selectedPointData);
 
   const data = useMemo(() => {
     if (!debouncedSearchValue) {
@@ -210,6 +209,7 @@ export default function DeckMap() {
         controller={true}
         layers={layers}
         onClick={(data) => {
+          setSuggestionsVisible(false);
           if (!data.layer) {
             setSelectedIndex(null);
             return;
@@ -268,11 +268,14 @@ export default function DeckMap() {
               setSearchValue("");
               setSelectedIndex(null);
             }}
+            // onBlur={() => setInputActive(false)}
+            onFocus={() => setSuggestionsVisible(true)}
           />
           <CommandList>
             {/* {searchValue && <CommandEmpty>No results found.</CommandEmpty>} */}
             {debouncedSearchValue &&
               searchValue &&
+              suggestionsVisible &&
               !selectedIndex &&
               data.slice(0, 15).map((entry) => (
                 <CommandItem
