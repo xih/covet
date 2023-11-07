@@ -13,6 +13,7 @@ import { useUser } from "@clerk/nextjs";
 import { useDebounce } from "~/lib/hooks";
 import { Button } from "./ui/button";
 import { Moon, Map as LucideMap } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
 
 import {
   Command,
@@ -288,38 +289,21 @@ export default function DeckMap() {
                 >
                   <div className="flex flex-col">
                     <span>{entry.prettyLocation.toUpperCase()}</span>
-                    <span className="text-xs">{entry.grantee}</span>
+                    {/* <span className="text-xs">{entry.grantee}</span> */}
+                    <div className="flex flex-wrap">
+                      {entry.grantee.split(",").map((grantee) => {
+                        return (
+                          <span key={grantee}>
+                            <Badge variant="outline">
+                              <span className="text-[10px]">{grantee}</span>
+                            </Badge>
+                          </span>
+                        );
+                      })}
+                    </div>
                   </div>
                 </CommandItem>
               ))}
-            {/* <CommandGroup heading="Suggestions">
-              <CommandItem>
-                <span>Calendar</span>
-              </CommandItem>
-              <CommandItem>
-                <span>Search Emoji</span>
-              </CommandItem>
-              <CommandItem>
-                <Calculator className="mr-2 h-4 w-4" />
-                <span>Calculator</span>
-              </CommandItem>
-            </CommandGroup>
-            <CommandSeparator />
-            <CommandGroup heading="Settings">
-              <CommandItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-                <CommandShortcut>⌘P</CommandShortcut>
-              </CommandItem>
-              <CommandItem>
-                <span>Billing</span>
-                <CommandShortcut>⌘B</CommandShortcut>
-              </CommandItem>
-              <CommandItem>
-                <span>Settings</span>
-                <CommandShortcut>⌘S</CommandShortcut>
-              </CommandItem>
-            </CommandGroup> */}
           </CommandList>
         </Command>
       </div>
