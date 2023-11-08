@@ -47,9 +47,9 @@ export default function BottomSheet(props: BottomSheetProps) {
       }}
       onOpenChange={onOpenChange}
       modal={false}
-      snapPoints={[0.5, 0.8, 1]}
-      // activeSnapPoint={snap}
-      // setActiveSnapPoint={setSnap}
+      snapPoints={[0.3, 0.6, 0.95]}
+      activeSnapPoint={snap}
+      setActiveSnapPoint={setSnap}
     >
       <Drawer.Portal>
         <Drawer.Content className="border-b-none fixed bottom-0 left-0 right-0 mx-[-1px] flex h-full max-h-[97%] flex-col rounded-t-[10px] border border-gray-200 bg-white">
@@ -61,50 +61,52 @@ export default function BottomSheet(props: BottomSheetProps) {
           > */}
           <Drawer.NestedRoot>
             <div className="flex-1 rounded-t-[10px] bg-white p-4">
-              <div className="mx-auto mb-8 h-1.5 w-12 flex-shrink-0 rounded-full bg-zinc-300" />
+              <div className="mx-auto mb-4 h-1.5 w-12 flex-shrink-0 rounded-full bg-zinc-300" />
               <Drawer.Title className="text-xl font-medium	">
                 {location}
               </Drawer.Title>
               <br />
               <Drawer.Description>
-                Current Owner:{" "}
-                <span className="flex flex-wrap gap-x-2 gap-y-1.5 font-medium text-slate-900">
-                  {grantee?.split(",").map((name) => (
-                    <p key={name} className="underline">
-                      <TooltipProvider>
-                        <Tooltip delayDuration={200}>
-                          <TooltipTrigger asChild>
-                            <Link
-                              href={`https://www.google.com/search?q=${encodeURIComponent(
-                                name,
-                              )}`}
-                              target="_blank"
-                              onClick={() => {
-                                mixpanel.track("searched on google", {
-                                  type: "grantee",
-                                  name: name,
-                                });
-                              }}
-                            >
-                              <Badge variant="secondary">
-                                <span className="flex text-sm">{name}</span>
-                              </Badge>
-                            </Link>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Search on Google</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </p>
-                  ))}
-                </span>
+                <div className="flex flex-col gap-y-1 text-slate-700">
+                  Current Owner:{" "}
+                  <span className="flex flex-wrap gap-x-2 gap-y-1.5 font-medium text-slate-900">
+                    {grantee?.split(",").map((name) => (
+                      <p key={name} className="">
+                        <TooltipProvider>
+                          <Tooltip delayDuration={200}>
+                            <TooltipTrigger asChild>
+                              <Link
+                                href={`https://www.google.com/search?q=${encodeURIComponent(
+                                  name,
+                                )}`}
+                                target="_blank"
+                                onClick={() => {
+                                  mixpanel.track("searched on google", {
+                                    type: "grantee",
+                                    name: name,
+                                  });
+                                }}
+                              >
+                                <Badge variant="secondary">
+                                  <span className="flex text-sm">{name}</span>
+                                </Badge>
+                              </Link>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Search on Google</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </p>
+                    ))}
+                  </span>
+                </div>
                 <br />
                 <div className="flex flex-col gap-y-1">
-                  <span className="gap-y-0.5 text-slate-500">
+                  <span className="gap-y-0.5 text-slate-700">
                     Previous Owner:{" "}
                   </span>
-                  <span className="flex flex-wrap gap-x-2 gap-y-1.5 font-medium text-slate-900">
+                  <div className="flex flex-wrap gap-x-2 gap-y-1.5 font-medium text-slate-900">
                     {grantor?.split(",").map((name) => {
                       return (
                         <div key={name}>
@@ -136,93 +138,96 @@ export default function BottomSheet(props: BottomSheetProps) {
                         </div>
                       );
                     })}
-                  </span>{" "}
+                  </div>
                 </div>
                 <br />
-                Coordinates:
+                {/* 
                 <br />
-                <span className="font-medium text-slate-900">
-                  {lat},{lon}
-                </span>
-                <br />
-                <br />
-                <p>Find on:</p>
-                <div className="flex flex-col justify-start gap-2">
-                  <div className="flex grow flex-row gap-1">
-                    <Link
-                      href={`https://www.google.com/search?q=${encodeURIComponent(
-                        "zillow" + location + "san francisco",
-                      )}`}
-                      target="_blank"
-                      onClick={() => {
-                        mixpanel.track("searched address", {
-                          type: "zillow",
-                          address: location,
-                        });
-                      }}
-                    >
-                      <Button variant="outline" className="grow">
-                        Zillow
-                      </Button>
-                    </Link>
+                <br /> */}
+                <div className="flex flex-col gap-y-1">
+                  <p className="text-slate-800">Find on:</p>
+                  <div className="flex flex-wrap justify-start gap-1">
+                    <div className="flex grow flex-row gap-1">
+                      <Link
+                        href={`https://www.google.com/search?q=${encodeURIComponent(
+                          "zillow " + location + " san francisco",
+                        )}`}
+                        target="_blank"
+                        onClick={() => {
+                          mixpanel.track("searched address", {
+                            type: "zillow",
+                            address: location,
+                          });
+                        }}
+                      >
+                        <Button variant="outline" className="grow">
+                          Zillow
+                        </Button>
+                      </Link>
 
+                      <Link
+                        href={`https://www.google.com/search?q=${encodeURIComponent(
+                          "trulia " + location + " san francisco",
+                        )}`}
+                        target="_blank"
+                        onClick={() => {
+                          mixpanel.track("searched address", {
+                            type: "trulia",
+                            address: location,
+                          });
+                        }}
+                      >
+                        <Button variant="outline">Trulia</Button>
+                      </Link>
+                      <Link
+                        href={`https://www.google.com/search?q=${encodeURIComponent(
+                          "redfin " + location + " san francisco",
+                        )}`}
+                        target="_blank"
+                        onClick={() => {
+                          mixpanel.track("searched address", {
+                            type: "redfin",
+                            address: location,
+                          });
+                        }}
+                      >
+                        <Button variant="outline">Redfin</Button>
+                      </Link>
+                      <Link
+                        href={`https://www.google.com/search?q=${encodeURIComponent(
+                          "compass " + location + " san francisco",
+                        )}`}
+                        target="_blank"
+                        onClick={() => {
+                          mixpanel.track("searched address", {
+                            type: "compass",
+                            address: location,
+                          });
+                        }}
+                      >
+                        <Button variant="outline">Compass</Button>
+                      </Link>
+                    </div>
                     <Link
-                      href={`https://www.google.com/search?q=${encodeURIComponent(
-                        "trulia" + location + "san francisco",
+                      href={`https://maps.google.com/?q=${encodeURIComponent(
+                        location + " san francisco",
                       )}`}
                       target="_blank"
                       onClick={() => {
                         mixpanel.track("searched address", {
-                          type: "trulia",
+                          type: "google maps",
                           address: location,
                         });
                       }}
                     >
-                      <Button variant="outline">Trulia</Button>
+                      <Button variant="outline">Google Maps</Button>
                     </Link>
-                    <Link
-                      href={`https://www.google.com/search?q=${encodeURIComponent(
-                        "redfin" + location + "san francisco",
-                      )}`}
-                      target="_blank"
-                      onClick={() => {
-                        mixpanel.track("searched address", {
-                          type: "redfin",
-                          address: location,
-                        });
-                      }}
-                    >
-                      <Button variant="outline">Redfin</Button>
-                    </Link>
-                    <Link
-                      href={`https://www.google.com/search?q=${encodeURIComponent(
-                        "compass" + location + "san francisco",
-                      )}`}
-                      target="_blank"
-                      onClick={() => {
-                        mixpanel.track("searched address", {
-                          type: "compass",
-                          address: location,
-                        });
-                      }}
-                    >
-                      <Button variant="outline">Compass</Button>
-                    </Link>
+                    {/* Coordinates:
+                  <br />
+                  <span className="font-medium text-slate-900">
+                    {lat},{lon}
+                  </span> */}
                   </div>
-                  <Link
-                    href={`https://maps.google.com/?q=${encodeURIComponent(
-                      location + "san francisco",
-                    )}`}
-                    target="_blank"
-                    onClick={() => {
-                      mixpanel.track("searched address", {
-                        type: "google maps",
-                        address: location,
-                      });
-                    }}
-                  >
-                    <Button variant="outline">Google Maps</Button>
-                  </Link>
                 </div>
               </Drawer.Description>
             </div>

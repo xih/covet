@@ -241,19 +241,34 @@ export default function DeckMap() {
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
-        <BottomSheet
-          selectedPointData={!!selectedPointData}
-          onOpenChange={(willBeOpen) => {
-            if (!willBeOpen) {
-              setSelectedIndex(null);
-            }
-          }}
-          location={selectedPointData?.prettyLocation}
-          grantee={selectedPointData?.grantee}
-          grantor={selectedPointData?.grantor}
-          lat={selectedPointData?.lat}
-          lon={selectedPointData?.lon}
-        />
+
+        {window.innerWidth > 800 ? (
+          <Modal
+            location={selectedPointData?.propertyLocation}
+            grantee={selectedPointData?.grantee}
+            grantor={selectedPointData?.grantor}
+            lat={selectedPointData?.lat}
+            lon={selectedPointData?.lon}
+            onOpenChange={(open) => {
+              setSelectedIndex(undefined);
+            }}
+            isOpen={!!selectedPointData}
+          />
+        ) : (
+          <BottomSheet
+            selectedPointData={!!selectedPointData}
+            onOpenChange={(willBeOpen) => {
+              if (!willBeOpen) {
+                setSelectedIndex(null);
+              }
+            }}
+            location={selectedPointData?.prettyLocation}
+            grantee={selectedPointData?.grantee}
+            grantor={selectedPointData?.grantor}
+            lat={selectedPointData?.lat}
+            lon={selectedPointData?.lon}
+          />
+        )}
         {/* <Drawer.Root
           open={!!selectedPointData}
           onClose={() => {
@@ -280,17 +295,6 @@ export default function DeckMap() {
             <Drawer.Overlay />
           </Drawer.Portal>
         </Drawer.Root> */}
-        {/* <Modal
-          location={selectedPointData?.propertyLocation}
-          grantee={selectedPointData?.grantee}
-          grantor={selectedPointData?.grantor}
-          lat={selectedPointData?.lat}
-          lon={selectedPointData?.lon}
-          onOpenChange={(open) => {
-            setSelectedIndex(undefined);
-          }}
-          isOpen={!!selectedPointData}
-        /> */}
       </DeckGL>
       <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
         <Image src={PostCovetLogo as string} alt="postcovet" />
