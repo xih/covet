@@ -70,12 +70,8 @@ const slate300 = [203, 213, 225];
 
 export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
-  // const [searchDialogOpen, setSearchDialogOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState<
-    number | undefined | null
-  >();
-  const [hoveredObject, setHoveredObject] = useState<DataPoint | null>(null);
   const router = useRouter();
+  const selectedIndex = Number(router.query.i);
   const { isLoaded, isSignedIn, user } = useUser();
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
   const debouncedSearchValue = useDebounce(searchValue, 250);
@@ -93,12 +89,25 @@ export default function DeckMap() {
   const increaseAddressCounter = useMapStore(
     (state) => state.increaseAddressCounter,
   );
-
   const selectedPointData = useMemo(() => {
     return typeof selectedIndex === "number"
       ? cleanedData[selectedIndex]
       : null;
   }, [selectedIndex]);
+
+  function setSelectedIndex(i: number | null) {
+    if (!i) {
+      void router.push({
+        pathname: "/",
+      });
+      return;
+    } else {
+      void router.push({
+        pathname: "/",
+        query: { i },
+      });
+    }
+  }
 
   const data = useMemo(() => {
     if (!debouncedSearchValue) {
@@ -266,7 +275,6 @@ export default function DeckMap() {
       );
     }
   }
-
   return (
     <>
       <DeckGL
