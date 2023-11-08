@@ -26,6 +26,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "~/components/ui/command";
+import { cleanString, toTitleCase } from "~/lib/utils";
 
 type DataPoint = {
   block: number;
@@ -103,7 +104,9 @@ export default function DeckMap() {
     if (!debouncedSearchValue) {
       return cleanedData;
     }
-    const searchTokens = debouncedSearchValue.toUpperCase().split(" ");
+    const searchTokens = cleanString(debouncedSearchValue)
+      .toUpperCase()
+      .split(" ");
     const filteredData = cleanedData.filter((entry) => {
       return searchTokens.every(
         (token) =>
@@ -227,29 +230,33 @@ export default function DeckMap() {
     ) {
       return (
         <>
-          <CommandGroup heading={`Results (${data.length} items)`}>
+          <CommandGroup heading={`${data.length} results`}>
             {data.slice(0, searchSuggestionCount).map((entry) => (
               <CommandItem
                 key={entry.id}
                 onSelect={() => {
-                  setSearchValue(entry.prettyLocation);
+                  setSearchValue(toTitleCase(entry.prettyLocation));
                   setSelectedIndex(entry.id);
                   console.log(entry);
                 }}
               >
                 <div className="flex flex-col">
-                  <span>{entry.prettyLocation.toUpperCase()}</span>
-                  <div className="flex flex-wrap">
-                    {entry.grantee.split(",").map((grantee) => {
-                      return (
-                        <span key={grantee}>
-                          <Badge variant="outline">
-                            <span className="text-[10px]">{grantee}</span>
-                          </Badge>
-                        </span>
-                      );
-                    })}
-                  </div>
+                  <span>{toTitleCase(entry.prettyLocation)}</span>
+                  {entry.grantee ? (
+                    <div className="flex flex-wrap">
+                      {entry.grantee.split(",").map((grantee) => {
+                        return (
+                          <span key={grantee} className="p-0.5">
+                            <Badge variant="outline">
+                              <span className="text-[10px]">
+                                {toTitleCase(grantee)}
+                              </span>
+                            </Badge>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : null}{" "}
                 </div>
               </CommandItem>
             ))}
