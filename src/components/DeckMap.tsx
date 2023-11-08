@@ -27,6 +27,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "~/components/ui/command";
+import BottomSheet from "./BottomSheet";
 
 type DataPoint = {
   block: number;
@@ -240,7 +241,20 @@ export default function DeckMap() {
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
-        <Drawer.Root
+        <BottomSheet
+          selectedPointData={!!selectedPointData}
+          onOpenChange={(willBeOpen) => {
+            if (!willBeOpen) {
+              setSelectedIndex(null);
+            }
+          }}
+          location={selectedPointData?.prettyLocation}
+          grantee={selectedPointData?.grantee}
+          grantor={selectedPointData?.grantor}
+          lat={selectedPointData?.lat}
+          lon={selectedPointData?.lon}
+        />
+        {/* <Drawer.Root
           open={!!selectedPointData}
           onClose={() => {
             console.log("close");
@@ -265,7 +279,7 @@ export default function DeckMap() {
             </Drawer.Content>
             <Drawer.Overlay />
           </Drawer.Portal>
-        </Drawer.Root>
+        </Drawer.Root> */}
         {/* <Modal
           location={selectedPointData?.propertyLocation}
           grantee={selectedPointData?.grantee}
@@ -311,7 +325,6 @@ export default function DeckMap() {
                   onSelect={() => {
                     setSearchValue(entry.prettyLocation);
                     setSelectedIndex(entry.id);
-                    console.log(entry);
                   }}
                 >
                   <div className="flex flex-col">
