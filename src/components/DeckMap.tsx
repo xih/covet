@@ -21,6 +21,8 @@ import { useUser } from "@clerk/nextjs";
 import { useDebounce } from "~/lib/hooks";
 import { Button } from "./ui/button";
 import { Moon, Map as LucideMap } from "lucide-react";
+import { Drawer } from "vaul";
+import BottomSheetMobile from "~/shadcn/components/BottomSheetMobile";
 
 type DataPoint = {
   block: number;
@@ -67,6 +69,8 @@ export default function DeckMap() {
 
   const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
+
+  const [clickHome, setClickHome] = useState(false);
 
   const addressCounter = useMapStore((state) => state.addressCounter);
   const increaseAddressCounter = useMapStore(
@@ -150,6 +154,8 @@ export default function DeckMap() {
   const metaData =
     selectedIndex !== undefined ? data[selectedIndex] : undefined;
 
+  console.log("1. metadata", metaData);
+
   return (
     <>
       <DeckGL
@@ -161,6 +167,7 @@ export default function DeckMap() {
           overflow: "hidden",
         }}
         getTooltip={({ object }: { object?: DataPoint | null }) => {
+          console.log(object, "hovered");
           return object
             ? {
                 text: `Property Location: ${object.prettyLocation.toUpperCase()}
@@ -174,10 +181,14 @@ export default function DeckMap() {
         onClick={(data) => {
           if (!data.layer) {
             setSelectedIndex(-1);
+            setClickHome(false); // this is for setting the bottomsheetstate to false
             return;
           }
 
-          if (data.index === -1) return;
+          if (data.index === -1) {
+            setClickHome(false);
+            return;
+          }
           const pointMetaData = data.object as DataPoint;
 
           if (addressCounter > 4 && !isSignedIn) {
@@ -192,7 +203,9 @@ export default function DeckMap() {
             Grantor: pointMetaData?.grantor,
             Grantee: pointMetaData?.grantee,
           });
+          console.log("clicked, metadata", metaData);
           setSelectedIndex(data.index);
+          setClickHome(true);
           return;
         }}
       >
@@ -200,17 +213,26 @@ export default function DeckMap() {
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
-        <Modal
-          location={metaData?.propertyLocation}
-          grantee={metaData?.grantee}
-          grantor={metaData?.grantor}
-          lat={metaData?.lat}
-          lon={metaData?.lon}
-          onOpenChange={(open) => {
-            setSelectedIndex(undefined);
-          }}
-          isOpen={metaData !== undefined}
-        />
+        {window.innerWidth > 800 ? (
+          <Modal
+            location={metaData?.propertyLocation}
+            grantee={metaData?.grantee}
+            grantor={metaData?.grantor}
+            lat={metaData?.lat}
+            lon={metaData?.lon}
+            onOpenChange={(open) => {
+              setSelectedIndex(undefined);
+            }}
+            isOpen={metaData !== undefined}
+          />
+        ) : (
+          <BottomSheetMobile
+            isOpen={!!metaData}
+            location={metaData?.propertyLocation}
+            clickHome={!clickHome}
+            // setIsOpen={}
+          />
+        )}
       </DeckGL>
       <div className="absolute z-0 flex w-full flex-col gap-x-8 gap-y-2 p-4 md:flex-row md:p-8">
         <Image src={PostCovetLogo as string} alt="postcovet" />
