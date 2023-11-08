@@ -14,6 +14,7 @@ import { useDebounce } from "~/lib/hooks";
 import { Button } from "./ui/button";
 import { Moon, Map as LucideMap } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { Drawer } from "vaul";
 
 import {
   Command,
@@ -239,7 +240,33 @@ export default function DeckMap() {
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
-        <Modal
+        <Drawer.Root
+          open={!!selectedPointData}
+          onClose={() => {
+            console.log("close");
+          }}
+          onOpenChange={(willBeOpen) => {
+            if (!willBeOpen) {
+              setSelectedIndex(null);
+            }
+          }}
+          modal={false}
+        >
+          <Drawer.Portal>
+            <Drawer.Content className="fixed bottom-0 left-0 right-0 mt-24 flex h-[50%] flex-col rounded-t-[10px] bg-zinc-100">
+              <Drawer.NestedRoot>
+                <div className="flex-1 rounded-t-[10px] bg-white p-4">
+                  <div className="mx-auto mb-8 h-1.5 w-12 flex-shrink-0 rounded-full bg-zinc-300" />
+                  <Drawer.Title>
+                    {selectedPointData?.prettyLocation}
+                  </Drawer.Title>
+                </div>
+              </Drawer.NestedRoot>
+            </Drawer.Content>
+            <Drawer.Overlay />
+          </Drawer.Portal>
+        </Drawer.Root>
+        {/* <Modal
           location={selectedPointData?.propertyLocation}
           grantee={selectedPointData?.grantee}
           grantor={selectedPointData?.grantor}
@@ -249,7 +276,7 @@ export default function DeckMap() {
             setSelectedIndex(undefined);
           }}
           isOpen={!!selectedPointData}
-        />
+        /> */}
       </DeckGL>
       <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
         <Image src={PostCovetLogo as string} alt="postcovet" />
