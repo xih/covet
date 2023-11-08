@@ -333,7 +333,7 @@ export default function DeckMap() {
           lat={selectedPointData?.lat}
           lon={selectedPointData?.lon}
           onOpenChange={(open) => {
-            setSelectedIndex(undefined);
+            setSelectedIndex(null);
           }}
           isOpen={!!selectedPointData}
         />
