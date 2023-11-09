@@ -14,7 +14,7 @@ import Head from "next/head";
 
 const title = "PostCovet";
 const description =
-  "A closer look at San Francisco - who owns what in San Francisco";
+  "San Francisco Deed Search. Search and find deed data within seconds. Address Search. Individual Name";
 const url = "https://postcovet.com";
 const image = `${url}/postcovet.png`;
 
