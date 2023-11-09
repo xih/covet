@@ -77,11 +77,19 @@ export default function DeckMap() {
 
   const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
-
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const addressCounter = useMapStore((state) => state.addressCounter);
   const increaseAddressCounter = useMapStore(
     (state) => state.increaseAddressCounter,
   );
+  const nextIndex = useRef<null | number>(null);
+
+  useEffect(() => {
+    if (!drawerOpen && typeof nextIndex.current === "number") {
+      setSelectedIndex(nextIndex.current);
+      nextIndex.current = null;
+    }
+  }, [drawerOpen]);
 
   const selectedPointData = useMemo(() => {
     return typeof selectedIndex === "number"
@@ -228,9 +236,11 @@ export default function DeckMap() {
             Grantor: pointMetaData?.grantor,
             Grantee: pointMetaData?.grantee,
           });
-          setTimeout(() => {
+          if (!drawerOpen) {
             setSelectedIndex(pointMetaData.id);
-          }, 30);
+          } else {
+            nextIndex.current = pointMetaData.id;
+          }
           return;
         }}
       >
@@ -244,6 +254,9 @@ export default function DeckMap() {
             if (!willBeOpen) {
               console.log("setting to null 247");
               setSelectedIndex(null);
+              setDrawerOpen(false);
+            } else {
+              setDrawerOpen(true);
             }
           }}
           modal={false}
