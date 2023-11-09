@@ -111,10 +111,6 @@ export default function DeckMap() {
     }
   }, [analyticsSearchValue]);
 
-  // useEffect(() => {
-  //   setSelectedIndex(null);
-  // }, [searchValue]);
-
   const blue700 = [29, 78, 216];
   const orange500 = [249, 115, 22];
   const rose300 = [253, 164, 175];
@@ -175,7 +171,6 @@ export default function DeckMap() {
         console.error("point not found");
         return;
       }
-      console.log("updating view state");
 
       setViewState((prev) => {
         return {
@@ -213,6 +208,7 @@ export default function DeckMap() {
         onClick={(data) => {
           setSuggestionsVisible(false);
           if (!data.layer) {
+            console.log("setting to null 215");
             setSelectedIndex(null);
             return;
           }
@@ -232,7 +228,9 @@ export default function DeckMap() {
             Grantor: pointMetaData?.grantor,
             Grantee: pointMetaData?.grantee,
           });
-          setSelectedIndex(pointMetaData.id);
+          setTimeout(() => {
+            setSelectedIndex(pointMetaData.id);
+          }, 30);
           return;
         }}
       >
@@ -242,11 +240,9 @@ export default function DeckMap() {
         />
         <Drawer.Root
           open={!!selectedPointData}
-          onClose={() => {
-            console.log("close");
-          }}
           onOpenChange={(willBeOpen) => {
             if (!willBeOpen) {
+              console.log("setting to null 247");
               setSelectedIndex(null);
             }
           }}
