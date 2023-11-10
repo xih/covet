@@ -16,7 +16,6 @@ import { Badge } from "./ui/badge";
 
 export type BottomSheetProps = {
   open: boolean;
-  onOpenChange: (b: boolean) => void;
   location?: string;
   grantee?: string;
   grantor?: string;
@@ -25,7 +24,7 @@ export type BottomSheetProps = {
 };
 
 export default function BottomSheet(props: BottomSheetProps) {
-  const { open, onOpenChange, location, grantee, grantor, lat, lon } = props;
+  const { open, location, grantee, grantor, lat, lon } = props;
 
   const [snap, setSnap] = useState<number | string | null>("148px");
 
@@ -38,7 +37,6 @@ export default function BottomSheet(props: BottomSheetProps) {
       onClose={() => {
         console.log("close");
       }}
-      onOpenChange={onOpenChange}
       modal={false}
       snapPoints={[0.3, 0.6, 0.95]}
       activeSnapPoint={snap}

@@ -316,12 +316,12 @@ export default function DeckMap() {
         ) : (
           <BottomSheet
             open={!!selectedPointData}
-            onOpenChange={(willBeOpen) => {
-              if (!willBeOpen) {
-                console.log("106. selected index changed: ", selectedIndex);
-                setSelectedIndex(null);
-              }
-            }}
+            // onOpenChange={(willBeOpen) => {
+            //   if (!willBeOpen) {
+            //     console.log("106. selected index changed: ", selectedIndex);
+            //     setSelectedIndex(null);
+            //   }
+            // }}
             location={selectedPointData?.prettyLocation}
             grantee={selectedPointData?.grantee}
             grantor={selectedPointData?.grantor}
