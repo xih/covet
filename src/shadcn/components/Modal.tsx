@@ -171,106 +171,81 @@ export const Modal = (props: ModalProps) => {
             <p>Find on:</p>
             <div className="flex flex-col justify-start gap-2">
               <div className="flex grow flex-row gap-1">
-                <Button variant="outline" className="grow">
-                  <Link
-                    href={`https://www.google.com/search?q=${encodeURIComponent(
-                      "zillow" + prettyLocation + "san francisco",
-                    )}`}
-                    target="_blank"
-                    onClick={() => {
-                      mixpanel.track("searched address", {
-                        type: "zillow",
-                        address: prettyLocation,
-                      });
-                    }}
-                  >
-                    Zillow
-                  </Link>
-                </Button>
-
-                <Button variant="outline">
-                  <Link
-                    href={`https://www.google.com/search?q=${encodeURIComponent(
-                      "trulia" + prettyLocation + "san francisco",
-                    )}`}
-                    target="_blank"
-                    onClick={() => {
-                      mixpanel.track("searched address", {
-                        type: "trulia",
-                        address: prettyLocation,
-                      });
-                    }}
-                  >
-                    Trulia
-                  </Link>
-                </Button>
-                <Button variant="outline">
-                  <Link
-                    href={`https://www.google.com/search?q=${encodeURIComponent(
-                      "redfin" + prettyLocation + "san francisco",
-                    )}`}
-                    target="_blank"
-                    onClick={() => {
-                      mixpanel.track("searched address", {
-                        type: "redfin",
-                        address: prettyLocation,
-                      });
-                    }}
-                  >
-                    Redfin
-                  </Link>
-                </Button>
-                <Button variant="outline">
-                  <Link
-                    href={`https://www.google.com/search?q=${encodeURIComponent(
-                      "compass" + prettyLocation + "san francisco",
-                    )}`}
-                    target="_blank"
-                    onClick={() => {
-                      mixpanel.track("searched address", {
-                        type: "compass",
-                        address: prettyLocation,
-                      });
-                    }}
-                  >
-                    Compass
-                  </Link>
-                </Button>
-              </div>
-              <Button variant="outline">
                 <Link
-                  href={`https://maps.google.com/?q=${encodeURIComponent(
-                    prettyLocation + "san francisco",
+                  href={`https://www.google.com/search?q=${encodeURIComponent(
+                    "zillow" + prettyLocation + "san francisco",
                   )}`}
                   target="_blank"
                   onClick={() => {
                     mixpanel.track("searched address", {
-                      type: "google maps",
+                      type: "zillow",
                       address: prettyLocation,
                     });
                   }}
                 >
-                  Google Maps
+                  <Button variant="outline" className="grow">
+                    Zillow
+                  </Button>
                 </Link>
-              </Button>
-            </div>
-            {/* <Link
-              href={`https://www.google.com/search?q=${grantee}`}
-              target="_blank"
-              // add mixpanel event here:
-            >
-              <Button
+
+                <Link
+                  href={`https://www.google.com/search?q=${encodeURIComponent(
+                    "trulia" + prettyLocation + "san francisco",
+                  )}`}
+                  target="_blank"
+                  onClick={() => {
+                    mixpanel.track("searched address", {
+                      type: "trulia",
+                      address: prettyLocation,
+                    });
+                  }}
+                >
+                  <Button variant="outline">Trulia</Button>
+                </Link>
+                <Link
+                  href={`https://www.google.com/search?q=${encodeURIComponent(
+                    "redfin" + prettyLocation + "san francisco",
+                  )}`}
+                  target="_blank"
+                  onClick={() => {
+                    mixpanel.track("searched address", {
+                      type: "redfin",
+                      address: prettyLocation,
+                    });
+                  }}
+                >
+                  <Button variant="outline">Redfin</Button>
+                </Link>
+                <Link
+                  href={`https://www.google.com/search?q=${encodeURIComponent(
+                    "compass" + prettyLocation + "san francisco",
+                  )}`}
+                  target="_blank"
+                  onClick={() => {
+                    mixpanel.track("searched address", {
+                      type: "compass",
+                      address: prettyLocation,
+                    });
+                  }}
+                >
+                  <Button variant="outline">Compass</Button>
+                </Link>
+              </div>
+              <Link
+                href={`https://maps.google.com/?q=${encodeURIComponent(
+                  prettyLocation + "san francisco",
+                )}`}
+                target="_blank"
                 onClick={() => {
-                  mixpanel.track("searched on google", {
-                    "Property name": location,
-                    Grantor: grantor,
-                    Grantee: grantee,
+                  mixpanel.track("searched address", {
+                    type: "google maps",
+                    address: prettyLocation,
                   });
                 }}
               >
-                Who is {grantee}?
-              </Button>
-            </Link> */}
+                <Button variant="outline">Google Maps</Button>
+              </Link>
+            </div>
           </SheetDescription>
         </SheetHeader>
       </SheetContent>

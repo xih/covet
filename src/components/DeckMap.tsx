@@ -87,7 +87,6 @@ export default function DeckMap() {
   );
 
   const selectedPointData = useMemo(() => {
-    console.log("200. selected index changed: ", selectedIndex);
     return typeof selectedIndex === "number"
       ? cleanedData[selectedIndex]
       : null;
@@ -168,17 +167,13 @@ export default function DeckMap() {
   const layers = [ScatterPlayLayer];
 
   useEffect(() => {
-    console.log("THE MAIN CHANGE: selected index changed: ", selectedIndex);
     if (typeof selectedIndex === "number" && selectedIndex > -1) {
       const point = cleanedData[selectedIndex];
       if (!point) {
-        console.error("point not found");
         return;
       }
-      console.log("updating view state");
 
       setViewState((prev) => {
-        console.log("1. selected view state in setViewState: ", selectedIndex);
         return {
           ...prev,
           latitude: point.lat,
@@ -212,16 +207,13 @@ export default function DeckMap() {
         controller={true}
         layers={layers}
         onClick={(data) => {
-          console.log("99. selected index changed: ", selectedIndex);
           setSuggestionsVisible(false);
           if (!data.layer) {
-            console.log("100. selected index changed: ", selectedIndex);
             setSelectedIndex(null);
             return;
           }
 
           if (data.index === -1) {
-            console.log("101. selected index changed: ", selectedIndex);
             return;
           }
           const pointMetaData = data.object as DataPoint;
@@ -238,13 +230,7 @@ export default function DeckMap() {
             Grantor: pointMetaData?.grantor,
             Grantee: pointMetaData?.grantee,
           });
-          console.log("102. selected index changed: ", selectedIndex);
-
-          // setTimeout(() => {
           setSelectedIndex(pointMetaData.id);
-          // }, 200);
-
-          console.log("103. selected index changed: ", selectedIndex);
           return;
         }}
       >
@@ -252,53 +238,6 @@ export default function DeckMap() {
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
-
-        {/* Experiment 0 - this closes and opens on desktop but doesn't work on mobile. On mobile, every other click opens the bottom sheet */}
-        {/* <Drawer.Root
-          open={!!selectedPointData}
-          onClose={() => {
-            console.log("close");
-          }}
-          onOpenChange={(willBeOpen) => {
-            if (!willBeOpen) {
-              console.log("300. selected index changed: ", selectedIndex);
-              setSelectedIndex(null);
-            }
-          }}
-          modal={false}
-        >
-          <Drawer.Portal>
-            <Drawer.Content className="fixed bottom-0 left-0 right-0 mt-24 flex h-[50%] flex-col rounded-t-[10px] bg-zinc-100">
-              <Drawer.NestedRoot>
-                <div className="flex-1 rounded-t-[10px] bg-white p-4">
-                  <div className="mx-auto mb-8 h-1.5 w-12 flex-shrink-0 rounded-full bg-zinc-300" />
-                  <Drawer.Title>
-                    {selectedPointData?.prettyLocation}
-                  </Drawer.Title>
-                </div>
-              </Drawer.NestedRoot>
-            </Drawer.Content>
-            <Drawer.Overlay />
-          </Drawer.Portal>
-        </Drawer.Root> */}
-        {/* end of experiment 0 */}
-
-        {/* Experiment 1 */}
-        {/* <NonDismissBottomSheet
-          open={!!selectedPointData}
-          setOpen={() => {
-            setSelectedIndex(null);
-          }}
-        /> */}
-
-        {/* Experiment 2 nested sheet*/}
-        {/* <NestedBottomSheet
-          open={!!selectedPointData}
-          setOpen={() => {
-            setSelectedIndex(null);
-          }}
-        /> */}
-
         {window.innerWidth > 800 ? (
           <Modal
             location={selectedPointData?.propertyLocation}
@@ -307,8 +246,6 @@ export default function DeckMap() {
             lat={selectedPointData?.lat}
             lon={selectedPointData?.lon}
             onOpenChange={(open) => {
-              console.log("1. open", open);
-              console.log("104. selected index changed: ", selectedIndex);
               setSelectedIndex(undefined);
             }}
             isOpen={!!selectedPointData}
@@ -319,12 +256,6 @@ export default function DeckMap() {
             onClose={() => {
               setSelectedIndex(null);
             }}
-            // onOpenChange={(willBeOpen) => {
-            //   if (!willBeOpen) {
-            //     console.log("106. selected index changed: ", selectedIndex);
-            //     setSelectedIndex(null);
-            //   }
-            // }}
             location={selectedPointData?.prettyLocation}
             grantee={selectedPointData?.grantee}
             grantor={selectedPointData?.grantor}
@@ -342,7 +273,6 @@ export default function DeckMap() {
           <CommandInput
             onValueChange={(val) => {
               setSearchValue(val);
-              console.log("110. selected index changed: ", selectedIndex);
               setSelectedIndex(null);
             }}
             value={searchValue}
@@ -350,7 +280,6 @@ export default function DeckMap() {
             showClearButton={!!searchValue}
             handleClear={() => {
               setSearchValue("");
-              console.log("111. selected index changed: ", selectedIndex);
               setSelectedIndex(null);
             }}
             // onBlur={() => setInputActive(false)}

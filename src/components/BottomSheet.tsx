@@ -25,12 +25,8 @@ export type BottomSheetProps = {
 };
 
 export default function BottomSheet(props: BottomSheetProps) {
-  const { open, onClose, location, grantee, grantor, lat, lon } = props;
-
+  const { open, onClose, location, grantee, grantor } = props;
   const [snap, setSnap] = useState<number | string | null>("148px");
-
-  // add 3 snap states
-  // console.log("201. what's selected point data", open);
 
   return (
     <Drawer.Root
@@ -131,9 +127,6 @@ export default function BottomSheet(props: BottomSheetProps) {
                   </div>
                 </div>
                 <br />
-                {/* 
-                <br />
-                <br /> */}
                 <div className="flex flex-col gap-y-1">
                   <p className="text-slate-800">Find on:</p>
                   <div className="flex flex-wrap justify-start gap-1">
@@ -212,17 +205,11 @@ export default function BottomSheet(props: BottomSheetProps) {
                     >
                       <Button variant="outline">Google Maps</Button>
                     </Link>
-                    {/* Coordinates:
-                  <br />
-                  <span className="font-medium text-slate-900">
-                    {lat},{lon}
-                  </span> */}
                   </div>
                 </div>
               </Drawer.Description>
             </div>
           </Drawer.NestedRoot>
-          {/* </div> */}
         </Drawer.Content>
         <Drawer.Overlay />
       </Drawer.Portal>
