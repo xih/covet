@@ -316,6 +316,9 @@ export default function DeckMap() {
         ) : (
           <BottomSheet
             open={!!selectedPointData}
+            onClose={() => {
+              setSelectedIndex(null);
+            }}
             // onOpenChange={(willBeOpen) => {
             //   if (!willBeOpen) {
             //     console.log("106. selected index changed: ", selectedIndex);

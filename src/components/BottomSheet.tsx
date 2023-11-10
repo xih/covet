@@ -21,10 +21,11 @@ export type BottomSheetProps = {
   grantor?: string;
   lat?: number;
   lon?: number;
+  onClose: () => void;
 };
 
 export default function BottomSheet(props: BottomSheetProps) {
-  const { open, location, grantee, grantor, lat, lon } = props;
+  const { open, onClose, location, grantee, grantor, lat, lon } = props;
 
   const [snap, setSnap] = useState<number | string | null>("148px");
 
@@ -34,9 +35,7 @@ export default function BottomSheet(props: BottomSheetProps) {
   return (
     <Drawer.Root
       open={open}
-      onClose={() => {
-        console.log("close");
-      }}
+      onClose={onClose}
       modal={false}
       snapPoints={[0.3, 0.6, 0.95]}
       activeSnapPoint={snap}
