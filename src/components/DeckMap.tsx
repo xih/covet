@@ -28,6 +28,8 @@ import {
   CommandShortcut,
 } from "~/components/ui/command";
 import BottomSheet from "./BottomSheet";
+import NonDismissBottomSheet from "./NonDismissBottomSheet";
+import NestedBottomSheet from "./NestedBottomSheet";
 
 type DataPoint = {
   block: number;
@@ -85,6 +87,7 @@ export default function DeckMap() {
   );
 
   const selectedPointData = useMemo(() => {
+    console.log("200. selected index changed: ", selectedIndex);
     return typeof selectedIndex === "number"
       ? cleanedData[selectedIndex]
       : null;
@@ -111,10 +114,6 @@ export default function DeckMap() {
       mixpanel.track("search", { query: analyticsSearchValue });
     }
   }, [analyticsSearchValue]);
-
-  // useEffect(() => {
-  //   setSelectedIndex(null);
-  // }, [searchValue]);
 
   const blue700 = [29, 78, 216];
   const orange500 = [249, 115, 22];
@@ -169,7 +168,7 @@ export default function DeckMap() {
   const layers = [ScatterPlayLayer];
 
   useEffect(() => {
-    console.log("selected index changed: ", selectedIndex);
+    console.log("THE MAIN CHANGE: selected index changed: ", selectedIndex);
     if (typeof selectedIndex === "number" && selectedIndex > -1) {
       const point = cleanedData[selectedIndex];
       if (!point) {
@@ -179,6 +178,7 @@ export default function DeckMap() {
       console.log("updating view state");
 
       setViewState((prev) => {
+        console.log("1. selected view state in setViewState: ", selectedIndex);
         return {
           ...prev,
           latitude: point.lat,
@@ -212,13 +212,18 @@ export default function DeckMap() {
         controller={true}
         layers={layers}
         onClick={(data) => {
+          console.log("99. selected index changed: ", selectedIndex);
           setSuggestionsVisible(false);
           if (!data.layer) {
+            console.log("100. selected index changed: ", selectedIndex);
             setSelectedIndex(null);
             return;
           }
 
-          if (data.index === -1) return;
+          if (data.index === -1) {
+            console.log("101. selected index changed: ", selectedIndex);
+            return;
+          }
           const pointMetaData = data.object as DataPoint;
 
           if (addressCounter > 4 && !isSignedIn) {
@@ -233,7 +238,13 @@ export default function DeckMap() {
             Grantor: pointMetaData?.grantor,
             Grantee: pointMetaData?.grantee,
           });
+          console.log("102. selected index changed: ", selectedIndex);
+
+          // setTimeout(() => {
           setSelectedIndex(pointMetaData.id);
+          // }, 200);
+
+          console.log("103. selected index changed: ", selectedIndex);
           return;
         }}
       >
@@ -242,33 +253,7 @@ export default function DeckMap() {
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
 
-        {window.innerWidth > 800 ? (
-          <Modal
-            location={selectedPointData?.propertyLocation}
-            grantee={selectedPointData?.grantee}
-            grantor={selectedPointData?.grantor}
-            lat={selectedPointData?.lat}
-            lon={selectedPointData?.lon}
-            onOpenChange={(open) => {
-              setSelectedIndex(undefined);
-            }}
-            isOpen={!!selectedPointData}
-          />
-        ) : (
-          <BottomSheet
-            selectedPointData={!!selectedPointData}
-            onOpenChange={(willBeOpen) => {
-              if (!willBeOpen) {
-                setSelectedIndex(null);
-              }
-            }}
-            location={selectedPointData?.prettyLocation}
-            grantee={selectedPointData?.grantee}
-            grantor={selectedPointData?.grantor}
-            lat={selectedPointData?.lat}
-            lon={selectedPointData?.lon}
-          />
-        )}
+        {/* Experiment 0 - this closes and opens on desktop but doesn't work on mobile. On mobile, every other click opens the bottom sheet */}
         {/* <Drawer.Root
           open={!!selectedPointData}
           onClose={() => {
@@ -276,6 +261,7 @@ export default function DeckMap() {
           }}
           onOpenChange={(willBeOpen) => {
             if (!willBeOpen) {
+              console.log("300. selected index changed: ", selectedIndex);
               setSelectedIndex(null);
             }
           }}
@@ -295,6 +281,54 @@ export default function DeckMap() {
             <Drawer.Overlay />
           </Drawer.Portal>
         </Drawer.Root> */}
+        {/* end of experiment 0 */}
+
+        {/* Experiment 1 */}
+        {/* <NonDismissBottomSheet
+          open={!!selectedPointData}
+          setOpen={() => {
+            setSelectedIndex(null);
+          }}
+        /> */}
+
+        {/* Experiment 2 nested sheet*/}
+        {/* <NestedBottomSheet
+          open={!!selectedPointData}
+          setOpen={() => {
+            setSelectedIndex(null);
+          }}
+        /> */}
+
+        {window.innerWidth > 800 ? (
+          <Modal
+            location={selectedPointData?.propertyLocation}
+            grantee={selectedPointData?.grantee}
+            grantor={selectedPointData?.grantor}
+            lat={selectedPointData?.lat}
+            lon={selectedPointData?.lon}
+            onOpenChange={(open) => {
+              console.log("1. open", open);
+              console.log("104. selected index changed: ", selectedIndex);
+              setSelectedIndex(undefined);
+            }}
+            isOpen={!!selectedPointData}
+          />
+        ) : (
+          <BottomSheet
+            open={!!selectedPointData}
+            onOpenChange={(willBeOpen) => {
+              if (!willBeOpen) {
+                console.log("106. selected index changed: ", selectedIndex);
+                setSelectedIndex(null);
+              }
+            }}
+            location={selectedPointData?.prettyLocation}
+            grantee={selectedPointData?.grantee}
+            grantor={selectedPointData?.grantor}
+            lat={selectedPointData?.lat}
+            lon={selectedPointData?.lon}
+          />
+        )}
       </DeckGL>
       <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
         <Image src={PostCovetLogo as string} alt="postcovet" />
@@ -305,6 +339,7 @@ export default function DeckMap() {
           <CommandInput
             onValueChange={(val) => {
               setSearchValue(val);
+              console.log("110. selected index changed: ", selectedIndex);
               setSelectedIndex(null);
             }}
             value={searchValue}
@@ -312,6 +347,7 @@ export default function DeckMap() {
             showClearButton={!!searchValue}
             handleClear={() => {
               setSearchValue("");
+              console.log("111. selected index changed: ", selectedIndex);
               setSelectedIndex(null);
             }}
             // onBlur={() => setInputActive(false)}

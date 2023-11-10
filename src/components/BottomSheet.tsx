@@ -15,7 +15,7 @@ import mixpanel from "mixpanel-browser";
 import { Badge } from "./ui/badge";
 
 export type BottomSheetProps = {
-  selectedPointData: boolean;
+  open: boolean;
   onOpenChange: (b: boolean) => void;
   location?: string;
   grantee?: string;
@@ -25,23 +25,16 @@ export type BottomSheetProps = {
 };
 
 export default function BottomSheet(props: BottomSheetProps) {
-  const {
-    selectedPointData,
-    onOpenChange,
-    location,
-    grantee,
-    grantor,
-    lat,
-    lon,
-  } = props;
+  const { open, onOpenChange, location, grantee, grantor, lat, lon } = props;
 
   const [snap, setSnap] = useState<number | string | null>("148px");
 
   // add 3 snap states
+  // console.log("201. what's selected point data", open);
 
   return (
     <Drawer.Root
-      open={!!selectedPointData}
+      open={open}
       onClose={() => {
         console.log("close");
       }}
