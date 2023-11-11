@@ -30,3 +30,13 @@ export function getLatLongDistance(
 function deg2rad(deg: number): number {
   return deg * (Math.PI / 180);
 }
+
+export function toTitleCase(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/(^|\s)\S/g, (letter) => letter.toUpperCase());
+}
+
+export function cleanString(input: string): string {
+  return input.replace(/[.,]/g, "");
+}

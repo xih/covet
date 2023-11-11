@@ -57,11 +57,6 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>Covet - find who owns property in San Francisco</title>
-        <meta name="description" content="who owns these homes here?" />
-        <link rel="icon" href="/covet-favicon2.ico" />
-      </Head>
       <main className="">
         <DeckMap />
         <div className="absolute bottom-4 right-4">
