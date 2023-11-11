@@ -20,6 +20,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { Drawer } from "vaul";
 
 import {
   Command,
@@ -33,6 +34,7 @@ import {
   CommandShortcut,
 } from "~/components/ui/command";
 import { cleanString, toTitleCase } from "~/lib/utils";
+import BottomSheet from "./BottomSheet";
 
 type DataPoint = {
   block: number;
@@ -93,11 +95,20 @@ export default function DeckMap() {
 
   const [isSatelliteMapStyle, setIsSatelliteMapStyle] = useState(true);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
-
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const addressCounter = useMapStore((state) => state.addressCounter);
   const increaseAddressCounter = useMapStore(
     (state) => state.increaseAddressCounter,
   );
+  const nextIndex = useRef<null | number>(null);
+
+  useEffect(() => {
+    if (!drawerOpen && typeof nextIndex.current === "number") {
+      setSelectedIndex(nextIndex.current);
+      nextIndex.current = null;
+    }
+  }, [drawerOpen]);
+
   const selectedPointData = useMemo(() => {
     return typeof selectedIndex === "number"
       ? cleanedData[selectedIndex]
@@ -194,14 +205,11 @@ export default function DeckMap() {
   const layers = [ScatterPlayLayer];
 
   useEffect(() => {
-    console.log("selected index changed: ", selectedIndex);
     if (typeof selectedIndex === "number" && selectedIndex > -1) {
       const point = cleanedData[selectedIndex];
       if (!point) {
-        console.error("point not found");
         return;
       }
-      console.log("updating view state");
 
       setViewState((prev) => {
         return {
@@ -345,11 +353,14 @@ export default function DeckMap() {
         onClick={(data) => {
           setSuggestionsVisible(false);
           if (!data.layer) {
+            console.log("setting to null 215");
             setSelectedIndex(null);
             return;
           }
 
-          if (data.index === -1) return;
+          if (data.index === -1) {
+            return;
+          }
           const pointMetaData = data.object as DataPoint;
 
           if (addressCounter > 4 && !isSignedIn) {
@@ -364,7 +375,11 @@ export default function DeckMap() {
             Grantor: pointMetaData?.grantor,
             Grantee: pointMetaData?.grantee,
           });
-          setSelectedIndex(pointMetaData.id);
+          if (!drawerOpen) {
+            setSelectedIndex(pointMetaData.id);
+          } else {
+            nextIndex.current = pointMetaData.id;
+          }
           return;
         }}
       >
@@ -372,17 +387,31 @@ export default function DeckMap() {
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
-        <Modal
-          location={selectedPointData?.propertyLocation}
-          grantee={selectedPointData?.grantee}
-          grantor={selectedPointData?.grantor}
-          lat={selectedPointData?.lat}
-          lon={selectedPointData?.lon}
-          onOpenChange={(open) => {
-            setSelectedIndex(null);
-          }}
-          isOpen={!!selectedPointData}
-        />
+        {window.innerWidth > 800 ? (
+          <Modal
+            location={selectedPointData?.propertyLocation}
+            grantee={selectedPointData?.grantee}
+            grantor={selectedPointData?.grantor}
+            lat={selectedPointData?.lat}
+            lon={selectedPointData?.lon}
+            // onOpenChange={(open) => {
+            //   setSelectedIndex(undefined);
+            // }}
+            isOpen={!!selectedPointData}
+          />
+        ) : (
+          <BottomSheet
+            open={!!selectedPointData}
+            onClose={() => {
+              setSelectedIndex(null);
+            }}
+            location={selectedPointData?.prettyLocation}
+            grantee={selectedPointData?.grantee}
+            grantor={selectedPointData?.grantor}
+            lat={selectedPointData?.lat}
+            lon={selectedPointData?.lon}
+          />
+        )}
       </DeckGL>
       <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
         <Image src={PostCovetLogo as string} alt="postcovet" />
