@@ -101,6 +101,7 @@ export default function DeckMap() {
     (state) => state.increaseAddressCounter,
   );
   const nextIndex = useRef<null | number>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!drawerOpen && typeof nextIndex.current === "number") {
@@ -420,6 +421,7 @@ export default function DeckMap() {
           className="w-full rounded-lg border shadow-md sm:max-w-xs"
         >
           <CommandInput
+            ref={searchInputRef}
             onValueChange={(val) => {
               setSearchValue(val);
               setSelectedIndex(null);
@@ -430,6 +432,9 @@ export default function DeckMap() {
             handleClear={() => {
               setSearchValue("");
               setSelectedIndex(null);
+              if (searchInputRef.current) {
+                searchInputRef.current.focus();
+              }
             }}
             // onBlur={() => setInputActive(false)}
             onFocus={() => setSuggestionsVisible(true)}
