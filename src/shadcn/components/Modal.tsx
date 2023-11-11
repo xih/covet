@@ -24,7 +24,7 @@ export type ModalProps = {
   grantee?: string;
   lat?: number;
   lon?: number;
-  onOpenChange: (open: boolean) => void;
+  // onOpenChange: (open: boolean) => void;
   // drawerOpened: boolean;
 };
 
@@ -42,7 +42,7 @@ export const Modal = (props: ModalProps) => {
     grantee,
     lat,
     lon,
-    onOpenChange,
+    // onOpenChange,
     isOpen,
   } = props;
 
