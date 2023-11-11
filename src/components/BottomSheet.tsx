@@ -1,5 +1,3 @@
-import clsx from "clsx";
-import { bool } from "envalid";
 import React, { useState } from "react";
 import { Drawer } from "vaul";
 import {
