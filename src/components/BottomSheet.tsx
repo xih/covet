@@ -12,6 +12,8 @@ import Link from "next/link";
 import mixpanel from "mixpanel-browser";
 import { Badge } from "./ui/badge";
 
+import { useRouter } from "next/router";
+
 export type BottomSheetProps = {
   open: boolean;
   location?: string;
@@ -25,6 +27,21 @@ export type BottomSheetProps = {
 export default function BottomSheet(props: BottomSheetProps) {
   const { open, onClose, location, grantee, grantor } = props;
   const [snap, setSnap] = useState<number | string | null>("148px");
+
+  const router = useRouter();
+
+  const browserURL = router.asPath;
+  console.log(browserURL, "browserURL");
+
+  console.log(router, "router");
+
+  const domain = "https://postcovet.com";
+
+  const textMessage = encodeURIComponent(
+    `👋 Want to purchase this home? Check out who owns this home near me: ${
+      domain + router.asPath
+    }`,
+  );
 
   return (
     <Drawer.Root
@@ -204,6 +221,20 @@ export default function BottomSheet(props: BottomSheetProps) {
                       <Button variant="outline">Google Maps</Button>
                     </Link>
                   </div>
+                </div>
+                <br />
+                <div>
+                  <Link
+                    href={`sms:&body=${textMessage}`}
+                    onClick={() => {
+                      mixpanel.track("sent to a frined", {
+                        type: "text",
+                        address: location,
+                      });
+                    }}
+                  >
+                    <Button>Text this to a friend!</Button>
+                  </Link>
                 </div>
               </Drawer.Description>
             </div>
