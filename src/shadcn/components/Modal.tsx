@@ -36,15 +36,7 @@ export type ModalProps = {
 // }
 
 export const Modal = (props: ModalProps) => {
-  const {
-    location = "",
-    grantor,
-    grantee,
-    lat,
-    lon,
-    // onOpenChange,
-    isOpen,
-  } = props;
+  const { location = "", grantor, grantee, lat, lon, isOpen } = props;
 
   const first = location.slice(0, 4);
   const middle = location.slice(4, -4);

@@ -247,7 +247,13 @@ export default function DeckMap() {
     ) {
       return (
         <>
-          <CommandGroup heading={`${data.length} results`}>
+          <CommandGroup
+            heading={
+              !!data.length
+                ? `${data.length} results`
+                : `${data.length} results. Single family residentials for now =)`
+            }
+          >
             {data.slice(0, searchSuggestionCount).map((entry) => (
               <CommandItem
                 key={entry.id}
@@ -379,7 +385,7 @@ export default function DeckMap() {
               setSelectedIndex(null);
             }}
             value={searchValue}
-            placeholder="Search address or name"
+            placeholder="Search an address or name in SF"
             showClearButton={!!searchValue}
             handleClear={() => {
               setSearchValue("");
