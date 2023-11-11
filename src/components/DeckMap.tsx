@@ -12,7 +12,13 @@ import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
 import { useDebounce } from "~/lib/hooks";
 import { Button } from "./ui/button";
-import { Moon, Map as LucideMap, Plus } from "lucide-react";
+import {
+  Moon,
+  Map as LucideMap,
+  Plus,
+  Lightbulb,
+  TrendingUp,
+} from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 
 import {
@@ -67,6 +73,9 @@ const orange500 = [249, 115, 22];
 const rose300 = [253, 164, 175];
 const rose500 = [244, 63, 94];
 const slate300 = [203, 213, 225];
+
+const suggestionListIDs = [16500, 19054, 26754];
+const suggestionListData = suggestionListIDs.map((id) => cleanedData[id]!);
 
 export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
@@ -273,8 +282,45 @@ export default function DeckMap() {
           {getSuggestionFooter()}
         </>
       );
+    } else if (suggestionsVisible && !searchValue) {
+      return (
+        <CommandGroup heading="Popular queries">
+          {suggestionListData.map((entry) => (
+            <CommandItem
+              key={entry.id}
+              onSelect={() => {
+                setSearchValue(toTitleCase(entry.prettyLocation));
+                setSelectedIndex(entry.id);
+              }}
+            >
+              <div className="flex items-center">
+                <TrendingUp className="mr-2 h-4 w-4 shrink-0" />
+                <div className="flex flex-col">
+                  <span>{toTitleCase(entry.prettyLocation)}</span>
+                  {entry.grantee ? (
+                    <div className="flex flex-wrap">
+                      {entry.grantee.split(",").map((grantee) => {
+                        return (
+                          <span key={grantee} className="p-0.5">
+                            <Badge variant="outline">
+                              <span className="text-[10px]">
+                                {toTitleCase(grantee)}
+                              </span>
+                            </Badge>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : null}{" "}
+                </div>
+              </div>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      );
     }
   }
+
   return (
     <>
       <DeckGL
