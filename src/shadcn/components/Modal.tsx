@@ -28,6 +28,8 @@ export type ModalProps = {
   // drawerOpened: boolean;
 };
 
+import type { PropsWithChildren } from "react";
+
 // //@ts-ignore-3 adf
 // function toTitleCase(str): string {
 //   return str.replace(/\w\S*/g, function (txt): string {
@@ -35,16 +37,8 @@ export type ModalProps = {
 //   });
 // }
 
-export const Modal = (props: ModalProps) => {
-  const {
-    location = "",
-    grantor,
-    grantee,
-    lat,
-    lon,
-    // onOpenChange,
-    isOpen,
-  } = props;
+export const Modal = (props: ModalProps & PropsWithChildren) => {
+  const { location = "", grantor, grantee, lat, lon, isOpen, children } = props;
 
   const first = location.slice(0, 4);
   const middle = location.slice(4, -4);
@@ -92,7 +86,8 @@ export const Modal = (props: ModalProps) => {
           </SheetTitle>
           <br />
           <SheetDescription className="text-left">
-            <p>
+            {children}
+            {/* <p>
               Current Owner:{" "}
               <span className="font-medium text-slate-900">
                 {grantee?.split(",").map((name) => (
@@ -245,7 +240,7 @@ export const Modal = (props: ModalProps) => {
               >
                 <Button variant="outline">Google Maps</Button>
               </Link>
-            </div>
+            </div> */}
           </SheetDescription>
         </SheetHeader>
       </SheetContent>

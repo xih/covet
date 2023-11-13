@@ -29,6 +29,7 @@ import {
 } from "~/components/ui/command";
 import { cleanString, toTitleCase } from "~/lib/utils";
 import BottomSheet from "./BottomSheet";
+import SheetContent from "./SheetContent";
 
 type DataPoint = {
   block: number;
@@ -251,7 +252,13 @@ export default function DeckMap() {
     ) {
       return (
         <>
-          <CommandGroup heading={`${data.length} results`}>
+          <CommandGroup
+            heading={
+              !!data.length
+                ? `${data.length} results`
+                : `${data.length} results. Single family residentials for now =)`
+            }
+          >
             {data.slice(0, searchSuggestionCount).map((entry) => (
               <CommandItem
                 key={entry.id}
@@ -396,7 +403,13 @@ export default function DeckMap() {
             //   setSelectedIndex(undefined);
             // }}
             isOpen={!!selectedPointData}
-          />
+          >
+            <SheetContent
+              location={selectedPointData?.prettyLocation}
+              grantee={selectedPointData?.grantee}
+              grantor={selectedPointData?.grantor}
+            />
+          </Modal>
         ) : (
           <BottomSheet
             open={!!selectedPointData}
@@ -408,7 +421,13 @@ export default function DeckMap() {
             grantor={selectedPointData?.grantor}
             lat={selectedPointData?.lat}
             lon={selectedPointData?.lon}
-          />
+          >
+            <SheetContent
+              location={selectedPointData?.prettyLocation}
+              grantee={selectedPointData?.grantee}
+              grantor={selectedPointData?.grantor}
+            />
+          </BottomSheet>
         )}
       </DeckGL>
       <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
@@ -424,7 +443,7 @@ export default function DeckMap() {
               setSelectedIndex(null);
             }}
             value={searchValue}
-            placeholder="Search address or name"
+            placeholder="Search an address or name in SF"
             showClearButton={!!searchValue}
             handleClear={() => {
               setSearchValue("");
