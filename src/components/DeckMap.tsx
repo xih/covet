@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
 import { useDebounce } from "~/lib/hooks";
 import { Button } from "./ui/button";
-import { Moon, Map as LucideMap, Plus } from "lucide-react";
+import { Moon, Map as LucideMap, Plus, Home, TrendingUp } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Drawer } from "vaul";
 
@@ -70,6 +70,9 @@ const rose300 = [253, 164, 175];
 const rose500 = [244, 63, 94];
 const slate300 = [203, 213, 225];
 
+const suggestionListIDs = [16500, 19054, 26754];
+const suggestionListData = suggestionListIDs.map((id) => cleanedData[id]!);
+
 export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
   const router = useRouter();
@@ -92,6 +95,7 @@ export default function DeckMap() {
     (state) => state.increaseAddressCounter,
   );
   const nextIndex = useRef<null | number>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!drawerOpen && typeof nextIndex.current === "number") {
@@ -257,6 +261,46 @@ export default function DeckMap() {
                   console.log(entry);
                 }}
               >
+                <div className="flex items-center">
+                  <Home className="mr-2 h-4 w-4 shrink-0" />
+                  <div className="flex flex-col">
+                    <span>{toTitleCase(entry.prettyLocation)}</span>
+                    {entry.grantee ? (
+                      <div className="flex flex-wrap">
+                        {entry.grantee.split(",").map((grantee) => {
+                          return (
+                            <span key={grantee} className="p-0.5">
+                              <Badge variant="outline">
+                                <span className="text-[10px]">
+                                  {toTitleCase(grantee)}
+                                </span>
+                              </Badge>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    ) : null}{" "}
+                  </div>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          {getSuggestionFooter()}
+        </>
+      );
+    } else if (suggestionsVisible && !searchValue) {
+      return (
+        <CommandGroup heading="Popular queries">
+          {suggestionListData.map((entry) => (
+            <CommandItem
+              key={entry.id}
+              onSelect={() => {
+                setSearchValue(toTitleCase(entry.prettyLocation));
+                setSelectedIndex(entry.id);
+              }}
+            >
+              <div className="flex items-center">
+                <TrendingUp className="mr-2 h-4 w-4 shrink-0" />
                 <div className="flex flex-col">
                   <span>{toTitleCase(entry.prettyLocation)}</span>
                   {entry.grantee ? (
@@ -275,14 +319,14 @@ export default function DeckMap() {
                     </div>
                   ) : null}{" "}
                 </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          {getSuggestionFooter()}
-        </>
+              </div>
+            </CommandItem>
+          ))}
+        </CommandGroup>
       );
     }
   }
+
   return (
     <>
       <DeckGL
@@ -374,6 +418,7 @@ export default function DeckMap() {
           className="w-full rounded-lg border shadow-md sm:max-w-xs"
         >
           <CommandInput
+            ref={searchInputRef}
             onValueChange={(val) => {
               setSearchValue(val);
               setSelectedIndex(null);
@@ -384,6 +429,9 @@ export default function DeckMap() {
             handleClear={() => {
               setSearchValue("");
               setSelectedIndex(null);
+              if (searchInputRef.current) {
+                searchInputRef.current.focus();
+              }
             }}
             // onBlur={() => setInputActive(false)}
             onFocus={() => setSuggestionsVisible(true)}
