@@ -192,7 +192,7 @@ export default function SheetContent(props: SheetContentProps) {
         <Link
           href={`sms:&body=${textMessage}`}
           onClick={() => {
-            mixpanel.track("sent to a frined", {
+            mixpanel.track("sent to a friend", {
               type: "text",
               address: location,
             });
