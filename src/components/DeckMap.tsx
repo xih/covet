@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Map, {
   GeolocateControl,
   MapRef,
@@ -22,6 +28,7 @@ import { Moon, Map as LucideMap, Plus } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Drawer } from "vaul";
 import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox/typed";
+import { DeckProps, PickingInfo } from "@deck.gl/core/typed";
 
 import {
   Command,
@@ -111,6 +118,13 @@ export default function DeckMap() {
     return null;
   }
 
+  function DeckGLOverlay2(props: DeckProps) {
+    const deck = useControl<MapboxOverlay>(() => new MapboxOverlay(props));
+
+    deck.setProps(props);
+    return null;
+  }
+
   useEffect(() => {
     if (!drawerOpen && typeof nextIndex.current === "number") {
       setSelectedIndex(nextIndex.current);
@@ -166,52 +180,53 @@ export default function DeckMap() {
     }
   }, [analyticsSearchValue]);
 
-  const ScatterPlayLayer = useMemo(() => {
-    return new ScatterplotLayer<DataPoint>({
-      id: "scatterplot-layer",
-      data: data,
-      pickable: true,
-      opacity: 0.8,
-      filled: true,
-      radiusScale:
-        data.length > 100000
-          ? 5
-          : data.length > 10000
-          ? 10
-          : data.length > 100
-          ? 20
-          : 50,
-      radiusMinPixels: 1,
-      radiusMaxPixels: 100,
-      lineWidthMinPixels: 0,
-      getPosition: (d) => [d.lon, d.lat],
-      getRadius: (d, context) => {
-        if (selectedIndex !== undefined && context.index === selectedIndex) {
-          return 1.2;
-        }
-        return 1;
-      },
-      // @ts-ignore ignore color
-      getFillColor: (d, context) => {
-        if (selectedIndex !== undefined && context.index === selectedIndex) {
-          return isSatelliteMapStyle ? blue700 : orange500; // orange on select
-        }
+  // const ScatterPlayLayer = useMemo(() => {
+  // return new ScatterplotLayer<DataPoint>({
+  const scatterplotLayer = new ScatterplotLayer<DataPoint>({
+    id: "scatterplot-layer",
+    data: data,
+    pickable: true,
+    opacity: 0.8,
+    filled: true,
+    radiusScale:
+      data.length > 100000
+        ? 5
+        : data.length > 10000
+        ? 10
+        : data.length > 100
+        ? 20
+        : 50,
+    radiusMinPixels: 1,
+    radiusMaxPixels: 100,
+    lineWidthMinPixels: 0,
+    getPosition: (d) => [d.lon, d.lat],
+    getRadius: (d, context) => {
+      if (selectedIndex !== undefined && context.index === selectedIndex) {
+        return 1.2;
+      }
+      return 1;
+    },
+    // @ts-ignore ignore color
+    getFillColor: (d, context) => {
+      if (selectedIndex !== undefined && context.index === selectedIndex) {
+        return isSatelliteMapStyle ? blue700 : orange500; // orange on select
+      }
 
-        return isSatelliteMapStyle ? rose300 : slate300; // light black
-      },
-      updateTriggers: {
-        getFillColor: [selectedIndex, isSatelliteMapStyle],
-        getRadius: [selectedIndex],
-      },
-      // highlightedObjectIndex: selectedIndex,
-      autoHighlight: true,
-      highlightColor: () => {
-        return isSatelliteMapStyle ? [244, 63, 94] : [100, 116, 139];
-      },
-    });
-  }, [data, isSatelliteMapStyle, selectedIndex]);
+      return isSatelliteMapStyle ? rose300 : slate300; // light black
+    },
+    updateTriggers: {
+      getFillColor: [selectedIndex, isSatelliteMapStyle],
+      getRadius: [selectedIndex],
+    },
+    // highlightedObjectIndex: selectedIndex,
+    autoHighlight: true,
+    highlightColor: () => {
+      return isSatelliteMapStyle ? [244, 63, 94] : [100, 116, 139];
+    },
+  });
+  // }, [data, isSatelliteMapStyle, selectedIndex]);
 
-  const layers = [ScatterPlayLayer];
+  const layers = [scatterplotLayer];
 
   const geolocateStyle: React.CSSProperties = {
     position: "absolute",
@@ -223,24 +238,68 @@ export default function DeckMap() {
     zIndex: 100,
   };
 
-  useEffect(() => {
-    if (typeof selectedIndex === "number" && selectedIndex > -1) {
-      const point = cleanedData[selectedIndex];
-      if (!point) {
+  // useEffect(() => {
+  //   if (typeof selectedIndex === "number" && selectedIndex > -1) {
+  //     const point = cleanedData[selectedIndex];
+  //     if (!point) {
+  //       return;
+  //     }
+
+  //     setViewState((prev) => {
+  //       console.log("1. does search trigger a new view state change", prev);
+  //       console.log("2. point", point);
+  //       return {
+  //         ...prev,
+  //         latitude: point.lat,
+  //         longitude: point.lon,
+  //         zoom: 17,
+  //         transitionDuration: 1000,
+  //       };
+  //     });
+  //   }
+  // }, [selectedIndex, data]);
+
+  const onUserInput = useCallback(
+    (evt) => {
+      // console.log(evt);
+      if (evt.type === "move") {
+        setViewState(evt.viewState);
         return;
       }
 
-      setViewState((prev) => {
-        return {
-          ...prev,
-          latitude: point.lat,
-          longitude: point.lon,
-          zoom: 17,
-          transitionDuration: 1000,
-        };
-      });
-    }
-  }, [selectedIndex, data]);
+      if (typeof selectedIndex === "number" && selectedIndex > -1) {
+        const point = cleanedData[selectedIndex];
+        if (!point) {
+          console.log("0. what is clicked here", point);
+          setViewState(evt.viewState);
+          return;
+        }
+
+        // consooe
+        console.log("1. does search trigger a new view state change", evt);
+        console.log("2. point", point);
+
+        // setViewState(viewState: {
+        //   latitude: point.lat,
+        //   longitude: point.lon,
+        // });
+        // return
+
+        // setViewState((prev) => {
+        //   console.log("1. does search trigger a new view state change", prev);
+        //   console.log("2. point", point);
+        //   return {
+        //     ...prev,
+        //     latitude: point.lat,
+        //     longitude: point.lon,
+        //     zoom: 17,
+        //     transitionDuration: 1000,
+        //   };
+        // });
+      }
+    },
+    [selectedIndex],
+  );
 
   function getSearchSuggestions() {
     function getSuggestionFooter() {
@@ -354,7 +413,15 @@ export default function DeckMap() {
       <Map
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
-        initialViewState={viewState}
+        {...viewState}
+        // onMove={(evt) => setViewState(evt.viewState)}
+        onMove={onUserInput}
+        // {...viewState}
+        // onMove={(evt) =>
+        //   // setViewState({ ...evt.viewState, transitionDuration: 0 })
+        //   setViewState(evt)
+        // }
+        // onViewportChange={(viewState) => setViewState(viewState)}
         style={{
           height: "100vh",
           width: "100vw",
@@ -363,7 +430,7 @@ export default function DeckMap() {
         }}
       >
         <DeckGLOverlay
-          interleaved={false}
+          interleaved={true}
           getTooltip={({ object }: { object?: DataPoint | null }) => {
             return object
               ? {
