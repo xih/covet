@@ -267,7 +267,7 @@ export default function DeckMap() {
 
   const geolocateStyle: React.CSSProperties = {
     marginRight: "1.3em",
-    marginBottom: "4em",
+    marginBottom: "10em",
     zIndex: 1,
   };
 
