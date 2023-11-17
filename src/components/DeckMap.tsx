@@ -9,6 +9,7 @@ import Map, {
   GeolocateControl,
   MapRef,
   NavigationControl,
+  ViewStateChangeEvent,
   useControl,
 } from "react-map-gl";
 import StaticMap from "react-map-gl";
@@ -44,6 +45,7 @@ import {
 import { cleanString, toTitleCase } from "~/lib/utils";
 import BottomSheet from "./BottomSheet";
 import SheetContent from "./SheetContent";
+// import { ViewStateChangeEvent } from "react-map-gl/dist/esm/types";
 
 type DataPoint = {
   block: number;
@@ -238,6 +240,8 @@ export default function DeckMap() {
     zIndex: 100,
   };
 
+  const mapRef = useRef(null);
+
   // useEffect(() => {
   //   if (typeof selectedIndex === "number" && selectedIndex > -1) {
   //     const point = cleanedData[selectedIndex];
@@ -246,8 +250,6 @@ export default function DeckMap() {
   //     }
 
   //     setViewState((prev) => {
-  //       console.log("1. does search trigger a new view state change", prev);
-  //       console.log("2. point", point);
   //       return {
   //         ...prev,
   //         latitude: point.lat,
@@ -259,19 +261,42 @@ export default function DeckMap() {
   //   }
   // }, [selectedIndex, data]);
 
-  const onUserInput = useCallback(
-    (evt) => {
-      // console.log(evt);
-      if (evt.type === "move") {
-        setViewState(evt.viewState);
+  useEffect(() => {
+    if (typeof selectedIndex === "number" && selectedIndex > -1) {
+      const point = cleanedData[selectedIndex];
+      if (!point) {
         return;
       }
+      // console.log("hi");
+      setViewState((prev) => {
+        return {
+          ...prev,
+          latitude: point.lat,
+          longitude: point.lon,
+          // zoom: 17,
+          transitionDuration: 1000,
+        };
+      });
+      // console.log("mapRef", mapRef.current);
+    }
+  }, [selectedIndex, data]);
+
+  const onUserInput = useCallback(
+    (evt: ViewStateChangeEvent) => {
+      // console.log(evt);
+      const { viewState } = evt;
+      if (evt.type === "move") {
+        setViewState({ ...viewState, transitionDuration: 1 });
+        return;
+      }
+
+      console.log("------------");
 
       if (typeof selectedIndex === "number" && selectedIndex > -1) {
         const point = cleanedData[selectedIndex];
         if (!point) {
           console.log("0. what is clicked here", point);
-          setViewState(evt.viewState);
+          setViewState({ ...viewState, transitionDuration: 1 });
           return;
         }
 
@@ -284,6 +309,20 @@ export default function DeckMap() {
         //   longitude: point.lon,
         // });
         // return
+        const newCenter = [point.lon, point.lat];
+
+        // mapRef.current?.flyTo({ center: [83, 23] });
+        console.log(mapRef, "map ref");
+
+        setViewState((prev) => {
+          return {
+            ...prev,
+            latitude: point.lat,
+            longitude: point.lon,
+            zoom: 17,
+            transitionDuration: 1000,
+          };
+        });
 
         // setViewState((prev) => {
         //   console.log("1. does search trigger a new view state change", prev);
@@ -413,7 +452,9 @@ export default function DeckMap() {
       <Map
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
+        attributionControl={false}
         {...viewState}
+        ref={mapRef}
         // onMove={(evt) => setViewState(evt.viewState)}
         onMove={onUserInput}
         // {...viewState}
