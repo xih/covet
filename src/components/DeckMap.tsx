@@ -30,6 +30,7 @@ import { Badge } from "~/components/ui/badge";
 import { Drawer } from "vaul";
 import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox/typed";
 import { DeckProps, PickingInfo } from "@deck.gl/core/typed";
+import { ArcLayer } from "@deck.gl/layers/typed";
 
 import {
   Command,
@@ -182,10 +183,11 @@ export default function DeckMap() {
     }
   }, [analyticsSearchValue]);
 
+  // I tried to memoize it, however, when zooming in, the dots completely disappear
   // const ScatterPlayLayer = useMemo(() => {
   // return new ScatterplotLayer<DataPoint>({
   const scatterplotLayer = new ScatterplotLayer<DataPoint>({
-    id: "scatterplot-layer",
+    id: "scatterplot-layer2",
     data: data,
     pickable: true,
     opacity: 0.8,
@@ -196,8 +198,8 @@ export default function DeckMap() {
         : data.length > 10000
         ? 10
         : data.length > 100
-        ? 20
-        : 50,
+        ? 11
+        : 12,
     radiusMinPixels: 1,
     radiusMaxPixels: 100,
     lineWidthMinPixels: 0,
@@ -228,16 +230,45 @@ export default function DeckMap() {
   });
   // }, [data, isSatelliteMapStyle, selectedIndex]);
 
-  const layers = [scatterplotLayer];
+  // I added an arc layer from this example:
+  // to see if I could memoize this
+  // https://github.com/visgl/react-map-gl/blob/master/examples/deckgl-overlay/src/app.tsx
+  type DataT = {
+    inbound: number;
+    outbound: number;
+    from: {
+      name: string;
+      coordinates: [number, number];
+    };
+    to: {
+      name: string;
+      coordinates: [number, number];
+    };
+  };
+
+  // no need to memoize, but there is a flicker going on.
+  // const arcLayerMemo = useMemo(() => {
+  const arcLayer = new ArcLayer<DataT>({
+    // return new ArcLayer<DataT>({
+    data: "https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/bart-segments.json",
+    getSourcePosition: (d) => d.from.coordinates,
+    getTargetPosition: (d) => d.to.coordinates,
+    getSourceColor: [255, 200, 0],
+    getTargetColor: [0, 140, 255],
+    getWidth: 12,
+    pickable: true,
+    autoHighlight: true,
+  });
+  // }, [data, selectedIndex]);
+
+  // todo - try the arclayer in the example and memoize that one and put to the layers arraay.
+  const layers = [scatterplotLayer, arcLayer];
+  // const layers = [arcLayer];
 
   const geolocateStyle: React.CSSProperties = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    margin: 10,
-    marginLeft: 50,
-    marginTop: 200,
-    zIndex: 100,
+    marginRight: "1.3em",
+    marginBottom: "4em",
+    zIndex: 1,
   };
 
   const mapRef = useRef(null);
@@ -267,14 +298,13 @@ export default function DeckMap() {
       if (!point) {
         return;
       }
-      // console.log("hi");
       setViewState((prev) => {
         return {
           ...prev,
           latitude: point.lat,
           longitude: point.lon,
-          // zoom: 17,
-          transitionDuration: 1000,
+          zoom: prev.zoom > 17 ? prev.zoom : 17,
+          transitionDuration: 2000,
         };
       });
       // console.log("mapRef", mapRef.current);
@@ -286,7 +316,7 @@ export default function DeckMap() {
       // console.log(evt);
       const { viewState } = evt;
       if (evt.type === "move") {
-        setViewState({ ...viewState, transitionDuration: 1 });
+        setViewState({ ...viewState, transitionDuration: 1000 });
         return;
       }
 
@@ -416,46 +446,17 @@ export default function DeckMap() {
     }
   }
 
-  // const scatterplotLayer2 = new ScatterplotLayer({
-  //   id: "my-scatterplot",
-  //   data: [{ position: [-74.5, 40], size: 100 }],
-  //   getPosition: (d) => d.position,
-  //   getRadius: (d) => d.size,
-  //   getFillColor: [255, 0, 0],
-  // });
-
   return (
     <>
-      {/* This works. */}
-      {/* <Map
-        initialViewState={{
-          latitude: 40,
-          longitude: -74.5,
-          zoom: 12,
-        }}
-        style={{
-          height: "100vh",
-          width: "100vw",
-          position: "fixed",
-          overflow: "hidden",
-        }}
-        mapStyle="mapbox://styles/mapbox/light-v9"
-        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-      >
-        <DeckGLOverlay layers={[scatterplotLayer2]} />
-        <NavigationControl
-          position="bottom-left"
-          style={{ marginLeft: "10em" }}
-        />
-      </Map> */}
-
       <Map
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
-        attributionControl={false}
+        // attributionControl={false}
         {...viewState}
         ref={mapRef}
-        // onMove={(evt) => setViewState(evt.viewState)}
+        // onMove={(evt) =>
+        //   setViewState({ ...evt.viewState, transitionDuration: 0 })
+        // }
         onMove={onUserInput}
         // {...viewState}
         // onMove={(evt) =>
@@ -473,15 +474,16 @@ export default function DeckMap() {
         <DeckGLOverlay
           interleaved={true}
           getTooltip={({ object }: { object?: DataPoint | null }) => {
-            return object
-              ? {
-                  text: `Property Location: ${object.prettyLocation.toUpperCase()}
-              Grantor: ${object.grantor}
-              Grantee: ${object.grantee}`,
-                }
-              : null;
+            if (object?.prettyLocation) {
+              return {
+                text: `Property Location: ${object.prettyLocation.toUpperCase()}
+            Grantor: ${object.grantor}
+            Grantee: ${object.grantee}`,
+              };
+            } else {
+              return null;
+            }
           }}
-          // controller={true}
           layers={layers}
           onClick={(data) => {
             setSuggestionsVisible(false);
@@ -520,7 +522,7 @@ export default function DeckMap() {
           style={geolocateStyle}
           positionOptions={{ enableHighAccuracy: true }}
           trackUserLocation={true}
-          position="top-left"
+          position="bottom-right"
         />
 
         {window.innerWidth > 800 ? (
