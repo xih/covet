@@ -11,6 +11,7 @@ import {
 
 import "~/styles/globals.css";
 import Head from "next/head";
+import type { Metadata } from "next";
 
 const title = "PostCovet";
 const description =
@@ -18,13 +19,40 @@ const description =
 const url = "https://postcovet.com";
 const image = `${url}/postcovet.png`;
 
+// https://nextjs.org/docs/app/api-reference/functions/generate-metadata#template
+// either use the static metadata object from next or
+// the dynamic metadata with generateMetaData({ params })
+export const metadata: Metadata = {
+  title,
+  description,
+  openGraph: {
+    title: "Post Covet",
+    description: "Find owners of single family homes in SF!",
+    images: [
+      {
+        url: `${url}/postcovet.png`,
+        width: 800,
+        height: 600,
+      },
+      {
+        url: `${url}/postcovet.png`,
+        width: 1800,
+        height: 1600,
+        alt: "Post Covet Logo San Francisco",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+};
+
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
   return (
     <>
-      <Head>
+      {/* <Head>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
@@ -40,7 +68,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <meta name="twitter:image" content={image} />
         <title>{title}</title>
         <link rel="icon" href="/covet-favicon2.ico" />
-      </Head>
+      </Head> */}
       <ClerkProvider {...pageProps}>
         <Component {...pageProps} />
       </ClerkProvider>
