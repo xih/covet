@@ -8,6 +8,7 @@ import {
   SignedOut,
   RedirectToSignIn,
 } from "@clerk/nextjs";
+import type { Metadata } from "next";
 
 import "~/styles/globals.css";
 import Head from "next/head";
@@ -17,6 +18,30 @@ const description =
   "San Francisco Deed Search. Search and find deed data within seconds. Address Search. Individual Name";
 const url = "https://postcovet.com";
 const image = `${url}/postcovet.png`;
+
+export const metadata: Metadata = {
+  title,
+  description,
+  openGraph: {
+    title: "Post Covet",
+    description: "Find owners of single family homes in SF!",
+    images: [
+      {
+        url: `${url}/postcovet.png`,
+        width: 800,
+        height: 600,
+      },
+      {
+        url: `${url}/postcovet.png`,
+        width: 1800,
+        height: 1600,
+        alt: "Post Covet Logo San Francisco",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+};
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -40,10 +65,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <meta name="twitter:image" content={image} />
         <title>{title}</title>
         <link rel="icon" href="/covet-favicon2.ico" />
-        <link
+        {/* <link
           href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css"
           rel="stylesheet"
-        />
+        /> */}
       </Head>
       <ClerkProvider {...pageProps}>
         <Component {...pageProps} />

@@ -13,7 +13,8 @@ import Map, {
   useControl,
 } from "react-map-gl";
 import StaticMap from "react-map-gl";
-import DeckGL from "@deck.gl/react/typed";
+// import DeckGL from "@deck.gl/react/typed";
+// import { DeckProps, PickingInfo } from "@deck.gl/core/typed";
 import mixpanel from "mixpanel-browser";
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
 import data from "../../public/properties_v1_3.json";
