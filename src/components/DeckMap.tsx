@@ -1,6 +1,20 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import Map, { MapRef } from "react-map-gl";
-import DeckGL from "@deck.gl/react/typed";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Map, {
+  GeolocateControl,
+  MapRef,
+  NavigationControl,
+  ViewStateChangeEvent,
+  useControl,
+} from "react-map-gl";
+import StaticMap from "react-map-gl";
+// import DeckGL from "@deck.gl/react/typed";
+// import { DeckProps, PickingInfo } from "@deck.gl/core/typed";
 import mixpanel from "mixpanel-browser";
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
 import data from "../../public/properties_v1_3.json";
@@ -15,6 +29,9 @@ import { Button } from "./ui/button";
 import { Moon, Map as LucideMap, Plus, Home, TrendingUp } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Drawer } from "vaul";
+import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox/typed";
+import { DeckProps, PickingInfo } from "@deck.gl/core/typed";
+import { ArcLayer } from "@deck.gl/layers/typed";
 
 import {
   Command,
@@ -30,6 +47,7 @@ import {
 import { cleanString, toTitleCase } from "~/lib/utils";
 import BottomSheet from "./BottomSheet";
 import SheetContent from "./SheetContent";
+// import { ViewStateChangeEvent } from "react-map-gl/dist/esm/types";
 
 type DataPoint = {
   block: number;
@@ -98,6 +116,23 @@ export default function DeckMap() {
   const nextIndex = useRef<null | number>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  function DeckGLOverlay(
+    props: MapboxOverlayProps & {
+      interleaved?: boolean;
+    },
+  ) {
+    const overlay = useControl<MapboxOverlay>(() => new MapboxOverlay(props));
+    overlay.setProps(props);
+    return null;
+  }
+
+  function DeckGLOverlay2(props: DeckProps) {
+    const deck = useControl<MapboxOverlay>(() => new MapboxOverlay(props));
+
+    deck.setProps(props);
+    return null;
+  }
+
   useEffect(() => {
     if (!drawerOpen && typeof nextIndex.current === "number") {
       setSelectedIndex(nextIndex.current);
@@ -153,52 +188,114 @@ export default function DeckMap() {
     }
   }, [analyticsSearchValue]);
 
-  const ScatterPlayLayer = useMemo(() => {
-    return new ScatterplotLayer<DataPoint>({
-      id: "scatterplot-layer",
-      data: data,
-      pickable: true,
-      opacity: 0.8,
-      filled: true,
-      radiusScale:
-        data.length > 100000
-          ? 5
-          : data.length > 10000
-          ? 10
-          : data.length > 100
-          ? 20
-          : 50,
-      radiusMinPixels: 1,
-      radiusMaxPixels: 100,
-      lineWidthMinPixels: 0,
-      getPosition: (d) => [d.lon, d.lat],
-      getRadius: (d, context) => {
-        if (selectedIndex !== undefined && context.index === selectedIndex) {
-          return 1.2;
-        }
-        return 1;
-      },
-      // @ts-ignore ignore color
-      getFillColor: (d, context) => {
-        if (selectedIndex !== undefined && context.index === selectedIndex) {
-          return isSatelliteMapStyle ? blue700 : orange500; // orange on select
-        }
+  // I tried to memoize it, however, when zooming in, the dots completely disappear
+  // const ScatterPlayLayer = useMemo(() => {
+  // return new ScatterplotLayer<DataPoint>({
+  const scatterplotLayer = new ScatterplotLayer<DataPoint>({
+    id: "scatterplot-layer2",
+    data: data,
+    pickable: true,
+    opacity: 0.8,
+    filled: true,
+    radiusScale:
+      data.length > 100000
+        ? 5
+        : data.length > 10000
+        ? 10
+        : data.length > 100
+        ? 11
+        : 12,
+    radiusMinPixels: 1,
+    radiusMaxPixels: 100,
+    lineWidthMinPixels: 0,
+    getPosition: (d) => [d.lon, d.lat],
+    getRadius: (d, context) => {
+      if (selectedIndex !== undefined && context.index === selectedIndex) {
+        return 1.2;
+      }
+      return 1;
+    },
+    // @ts-ignore ignore color
+    getFillColor: (d, context) => {
+      if (selectedIndex !== undefined && context.index === selectedIndex) {
+        return isSatelliteMapStyle ? blue700 : orange500; // orange on select
+      }
 
-        return isSatelliteMapStyle ? rose300 : slate300; // light black
-      },
-      updateTriggers: {
-        getFillColor: [selectedIndex, isSatelliteMapStyle],
-        getRadius: [selectedIndex],
-      },
-      // highlightedObjectIndex: selectedIndex,
-      autoHighlight: true,
-      highlightColor: () => {
-        return isSatelliteMapStyle ? [244, 63, 94] : [100, 116, 139];
-      },
-    });
-  }, [data, isSatelliteMapStyle, selectedIndex]);
+      return isSatelliteMapStyle ? rose300 : slate300; // light black
+    },
+    updateTriggers: {
+      getFillColor: [selectedIndex, isSatelliteMapStyle],
+      getRadius: [selectedIndex],
+    },
+    // highlightedObjectIndex: selectedIndex,
+    autoHighlight: true,
+    highlightColor: () => {
+      return isSatelliteMapStyle ? [244, 63, 94] : [100, 116, 139];
+    },
+  });
+  // }, [data, isSatelliteMapStyle, selectedIndex]);
 
-  const layers = [ScatterPlayLayer];
+  // I added an arc layer from this example:
+  // to see if I could memoize this
+  // https://github.com/visgl/react-map-gl/blob/master/examples/deckgl-overlay/src/app.tsx
+  type DataT = {
+    inbound: number;
+    outbound: number;
+    from: {
+      name: string;
+      coordinates: [number, number];
+    };
+    to: {
+      name: string;
+      coordinates: [number, number];
+    };
+  };
+
+  // no need to memoize, but there is a flicker going on.
+  // const arcLayerMemo = useMemo(() => {
+  const arcLayer = new ArcLayer<DataT>({
+    // return new ArcLayer<DataT>({
+    data: "https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/bart-segments.json",
+    getSourcePosition: (d) => d.from.coordinates,
+    getTargetPosition: (d) => d.to.coordinates,
+    getSourceColor: [255, 200, 0],
+    getTargetColor: [0, 140, 255],
+    getWidth: 12,
+    pickable: true,
+    autoHighlight: true,
+  });
+  // }, [data, selectedIndex]);
+
+  // todo - try the arclayer in the example and memoize that one and put to the layers arraay.
+  const layers = [scatterplotLayer, arcLayer];
+  // const layers = [arcLayer];
+
+  const geolocateStyle: React.CSSProperties = {
+    marginRight: "1.3em",
+    marginBottom: "10em",
+    zIndex: 1,
+  };
+
+  const mapRef = useRef(null);
+
+  // useEffect(() => {
+  //   if (typeof selectedIndex === "number" && selectedIndex > -1) {
+  //     const point = cleanedData[selectedIndex];
+  //     if (!point) {
+  //       return;
+  //     }
+
+  //     setViewState((prev) => {
+  //       return {
+  //         ...prev,
+  //         latitude: point.lat,
+  //         longitude: point.lon,
+  //         zoom: 17,
+  //         transitionDuration: 1000,
+  //       };
+  //     });
+  //   }
+  // }, [selectedIndex, data]);
 
   useEffect(() => {
     if (typeof selectedIndex === "number" && selectedIndex > -1) {
@@ -206,18 +303,77 @@ export default function DeckMap() {
       if (!point) {
         return;
       }
-
       setViewState((prev) => {
         return {
           ...prev,
           latitude: point.lat,
           longitude: point.lon,
-          zoom: 17,
-          transitionDuration: 1000,
+          zoom: prev.zoom > 17 ? prev.zoom : 17,
+          transitionDuration: 2000,
         };
       });
+      // console.log("mapRef", mapRef.current);
     }
   }, [selectedIndex, data]);
+
+  const onUserInput = useCallback(
+    (evt: ViewStateChangeEvent) => {
+      // console.log(evt);
+      const { viewState } = evt;
+      if (evt.type === "move") {
+        setViewState({ ...viewState, transitionDuration: 1000 });
+        return;
+      }
+
+      console.log("------------");
+
+      if (typeof selectedIndex === "number" && selectedIndex > -1) {
+        const point = cleanedData[selectedIndex];
+        if (!point) {
+          console.log("0. what is clicked here", point);
+          setViewState({ ...viewState, transitionDuration: 1 });
+          return;
+        }
+
+        // consooe
+        console.log("1. does search trigger a new view state change", evt);
+        console.log("2. point", point);
+
+        // setViewState(viewState: {
+        //   latitude: point.lat,
+        //   longitude: point.lon,
+        // });
+        // return
+        const newCenter = [point.lon, point.lat];
+
+        // mapRef.current?.flyTo({ center: [83, 23] });
+        console.log(mapRef, "map ref");
+
+        setViewState((prev) => {
+          return {
+            ...prev,
+            latitude: point.lat,
+            longitude: point.lon,
+            zoom: 17,
+            transitionDuration: 1000,
+          };
+        });
+
+        // setViewState((prev) => {
+        //   console.log("1. does search trigger a new view state change", prev);
+        //   console.log("2. point", point);
+        //   return {
+        //     ...prev,
+        //     latitude: point.lat,
+        //     longitude: point.lon,
+        //     zoom: 17,
+        //     transitionDuration: 1000,
+        //   };
+        // });
+      }
+    },
+    [selectedIndex],
+  );
 
   function getSearchSuggestions() {
     function getSuggestionFooter() {
@@ -336,62 +492,83 @@ export default function DeckMap() {
 
   return (
     <>
-      <DeckGL
-        initialViewState={viewState}
+      <Map
+        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+        mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
+        // attributionControl={false}
+        {...viewState}
+        ref={mapRef}
+        // onMove={(evt) =>
+        //   setViewState({ ...evt.viewState, transitionDuration: 0 })
+        // }
+        onMove={onUserInput}
+        // {...viewState}
+        // onMove={(evt) =>
+        //   // setViewState({ ...evt.viewState, transitionDuration: 0 })
+        //   setViewState(evt)
+        // }
+        // onViewportChange={(viewState) => setViewState(viewState)}
         style={{
           height: "100vh",
           width: "100vw",
           position: "fixed",
           overflow: "hidden",
         }}
-        getTooltip={({ object }: { object?: DataPoint | null }) => {
-          return object
-            ? {
-                text: `Property Location: ${object.prettyLocation.toUpperCase()}
-              Grantor: ${object.grantor}
-              Grantee: ${object.grantee}`,
-              }
-            : null;
-        }}
-        controller={true}
-        layers={layers}
-        onClick={(data) => {
-          setSuggestionsVisible(false);
-          if (!data.layer) {
-            console.log("setting to null 215");
-            setSelectedIndex(null);
-            return;
-          }
-
-          if (data.index === -1) {
-            return;
-          }
-          const pointMetaData = data.object as DataPoint;
-
-          if (addressCounter > 4 && !isSignedIn) {
-            void router.replace("/sign-in");
-            return;
-          } else {
-            increaseAddressCounter(1);
-          }
-
-          mixpanel.track("click address", {
-            "Property name": pointMetaData?.propertyLocation,
-            Grantor: pointMetaData?.grantor,
-            Grantee: pointMetaData?.grantee,
-          });
-          if (!drawerOpen) {
-            setSelectedIndex(pointMetaData.id);
-          } else {
-            nextIndex.current = pointMetaData.id;
-          }
-          return;
-        }}
       >
-        <Map
-          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
+        <DeckGLOverlay
+          interleaved={true}
+          getTooltip={({ object }: { object?: DataPoint | null }) => {
+            if (object?.prettyLocation) {
+              return {
+                text: `Property Location: ${object.prettyLocation.toUpperCase()}
+            Grantor: ${object.grantor}
+            Grantee: ${object.grantee}`,
+              };
+            } else {
+              return null;
+            }
+          }}
+          layers={layers}
+          onClick={(data) => {
+            setSuggestionsVisible(false);
+            if (!data.layer) {
+              console.log("setting to null 215");
+              setSelectedIndex(null);
+              return;
+            }
+
+            if (data.index === -1) {
+              return;
+            }
+            const pointMetaData = data.object as DataPoint;
+
+            if (addressCounter > 4 && !isSignedIn) {
+              void router.replace("/sign-in");
+              return;
+            } else {
+              increaseAddressCounter(1);
+            }
+
+            mixpanel.track("click address", {
+              "Property name": pointMetaData?.propertyLocation,
+              Grantor: pointMetaData?.grantor,
+              Grantee: pointMetaData?.grantee,
+            });
+            if (!drawerOpen) {
+              setSelectedIndex(pointMetaData.id);
+            } else {
+              nextIndex.current = pointMetaData.id;
+            }
+            return;
+          }}
         />
+        <GeolocateControl
+          style={geolocateStyle}
+          positionOptions={{ enableHighAccuracy: true }}
+          trackUserLocation={true}
+          position="bottom-right"
+        />
+
         {window.innerWidth > 800 ? (
           <Modal
             location={selectedPointData?.propertyLocation}
@@ -399,9 +576,6 @@ export default function DeckMap() {
             grantor={selectedPointData?.grantor}
             lat={selectedPointData?.lat}
             lon={selectedPointData?.lon}
-            // onOpenChange={(open) => {
-            //   setSelectedIndex(undefined);
-            // }}
             isOpen={!!selectedPointData}
           >
             <SheetContent
@@ -429,7 +603,8 @@ export default function DeckMap() {
             />
           </BottomSheet>
         )}
-      </DeckGL>
+      </Map>
+
       <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
         <Image src={PostCovetLogo as string} alt="postcovet" />
         <Command
@@ -452,13 +627,9 @@ export default function DeckMap() {
                 searchInputRef.current.focus();
               }
             }}
-            // onBlur={() => setInputActive(false)}
             onFocus={() => setSuggestionsVisible(true)}
           />
-          <CommandList>
-            {/* {searchValue && <CommandEmpty>No results found.</CommandEmpty>} */}
-            {getSearchSuggestions()}
-          </CommandList>
+          <CommandList>{getSearchSuggestions()}</CommandList>
         </Command>
       </div>
       <div className="absolute bottom-0 left-0 z-0 w-full p-4">
