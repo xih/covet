@@ -51,8 +51,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    <>
-      {/* <Head>
+    <div>
+      <Head>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
@@ -68,11 +68,11 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <meta name="twitter:image" content={image} />
         <title>{title}</title>
         <link rel="icon" href="/covet-favicon2.ico" />
-      </Head> */}
+      </Head>
       <ClerkProvider {...pageProps}>
         <Component {...pageProps} />
       </ClerkProvider>
-    </>
+    </div>
   );
 };
 
