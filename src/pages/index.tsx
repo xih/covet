@@ -69,6 +69,8 @@ export const metadata: Metadata = {
 };
 
 const DeckMap = dynamic(() => import("~/components/DeckMap"), {
+  // SRR has to be false because of this:
+  // https://github.com/visgl/deck.gl/issues/7735#issuecomment-1464197310
   ssr: false,
   loading: () => <LoadingView />,
 });

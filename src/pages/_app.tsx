@@ -12,8 +12,9 @@ import {
 import "~/styles/globals.css";
 import Head from "next/head";
 import type { Metadata } from "next";
+import { NextSeo } from "next-seo";
 
-const title = "PostCovet";
+const title = "PostCovet 33333";
 const description =
   "San Francisco Deed Search. Search and find deed data within seconds. Address Search. Individual Name";
 const url = "https://postcovet.com";
@@ -22,11 +23,13 @@ const image = `${url}/postcovet.png`;
 // https://nextjs.org/docs/app/api-reference/functions/generate-metadata#template
 // either use the static metadata object from next or
 // the dynamic metadata with generateMetaData({ params })
+// another approach:
+// https://github.com/vercel/next.js/issues/35172#issuecomment-1501040414
 export const metadata: Metadata = {
   title,
   description,
   openGraph: {
-    title: "Post Covet",
+    title: "Post Covet 2222",
     description: "Find owners of single family homes in SF!",
     images: [
       {
@@ -52,7 +55,41 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <div>
-      <Head>
+      <NextSeo
+        title="Using More of Config"
+        description="This example uses more of the available config options."
+        // canonical="https://www.canonical.ie/"
+        openGraph={{
+          url: "www.postcovet.com",
+          title: "Open Graph Title",
+          description: "Open Graph Description",
+          images: [
+            {
+              url: `${url}/postcovet.png`,
+              width: 800,
+              height: 600,
+              alt: "Og Image Alt",
+              type: "image/jpeg",
+            },
+            {
+              url: `${url}/postcovet.png`,
+              width: 900,
+              height: 800,
+              alt: "Og Image Alt Second",
+              type: "image/jpeg",
+            },
+            { url: `${url}/postcovet.png` },
+            { url: `${url}/postcovet.png` },
+          ],
+          siteName: "SiteName",
+        }}
+        twitter={{
+          handle: "@handle",
+          site: "@site",
+          cardType: "summary_large_image",
+        }}
+      />
+      {/* <Head>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
@@ -68,7 +105,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <meta name="twitter:image" content={image} />
         <title>{title}</title>
         <link rel="icon" href="/covet-favicon2.ico" />
-      </Head>
+      </Head> */}
       <ClerkProvider {...pageProps}>
         <Component {...pageProps} />
       </ClerkProvider>
