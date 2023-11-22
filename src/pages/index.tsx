@@ -85,22 +85,22 @@ export default function Home() {
 
   const addressCounter = useMapStore((state) => state.addressCounter);
 
-  const { isSignedIn, user, isLoaded } = useUser();
-  const { signIn } = useSignIn();
+  // const { isSignedIn, user, isLoaded } = useUser();
+  // const { signIn } = useSignIn();
 
-  useEffect(() => {
-    if (user) {
-      mixpanel.identify(user.id);
-      mixpanel.register({
-        Email: user.primaryEmailAddress?.emailAddress,
-      });
-      mixpanel.people.set({
-        // Email: user.primaryEmailAddress?.emailAddress,
-        name: user.fullName,
-        createdAt: new Date().toISOString(),
-      });
-    }
-  }, [signIn?.status, user]);
+  // useEffect(() => {
+  //   if (user) {
+  //     mixpanel.identify(user.id);
+  //     mixpanel.register({
+  //       Email: user.primaryEmailAddress?.emailAddress,
+  //     });
+  //     mixpanel.people.set({
+  //       // Email: user.primaryEmailAddress?.emailAddress,
+  //       name: user.fullName,
+  //       createdAt: new Date().toISOString(),
+  //     });
+  //   }
+  // }, [signIn?.status, user]);
 
   return (
     <>
@@ -116,7 +116,7 @@ export default function Home() {
         </div>
         <div className="absolute right-0 flex flex-row-reverse p-4 md:p-8">
           {/* <UserAuth /> */}
-          {isSignedIn ? (
+          {true ? (
             <UserButton afterSignOutUrl="/" />
           ) : (
             <div className="flex items-center">

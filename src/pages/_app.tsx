@@ -13,6 +13,7 @@ import "~/styles/globals.css";
 import Head from "next/head";
 import type { Metadata } from "next";
 import { NextSeo } from "next-seo";
+import Test from "./test";
 
 const title = "PostCovet 33333";
 const description =
@@ -106,9 +107,21 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <title>{title}</title>
         <link rel="icon" href="/covet-favicon2.ico" />
       </Head> */}
-      {/* <ClerkProvider {...pageProps}> */}
-      <Component {...pageProps} />
-      {/* </ClerkProvider> */}
+      {/* <ClerkProvider {...pageProps}>
+        <Component {...pageProps} />
+      </ClerkProvider> */}
+      <ClerkProvider {...pageProps}>
+        {/* Conditionally render based on authentication status */}
+        <SignedIn>
+          {/* User is signed in, render the main content */}
+          <Component {...pageProps} />
+        </SignedIn>
+
+        <SignedOut>
+          {/* User is signed out, render your sign-in page */}
+          <Test />
+        </SignedOut>
+      </ClerkProvider>
     </div>
   );
 };
