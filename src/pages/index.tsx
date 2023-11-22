@@ -105,6 +105,11 @@ export default function Home() {
   return (
     <>
       <main className="">
+        {/* hypothesis: dynamically importing deckmap is causing the head tag to not work.
+        approach: try using a react-map component (non-dynamically loaded and see if meta tags work)
+        
+        also try this: https://github.com/garmeeh/next-seo
+         */}
         <DeckMap />
         <div className="absolute bottom-4 right-4">
           <AlertDialogDemo />
