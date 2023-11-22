@@ -106,9 +106,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <title>{title}</title>
         <link rel="icon" href="/covet-favicon2.ico" />
       </Head> */}
-      <ClerkProvider {...pageProps}>
-        <Component {...pageProps} />
-      </ClerkProvider>
+      {/* <ClerkProvider {...pageProps}> */}
+      <Component {...pageProps} />
+      {/* </ClerkProvider> */}
     </div>
   );
 };
