@@ -57,12 +57,14 @@ export default function BottomSheet(
         <Drawer.Content className="border-b-none fixed bottom-0 left-0 right-0 mx-[-1px] flex h-full max-h-[97%] flex-col rounded-t-[10px] border border-gray-200 bg-white">
           <Drawer.NestedRoot>
             <div className="flex-1 rounded-t-[10px] bg-white p-4">
-              <div className="mx-auto mb-4 h-1.5 w-12 flex-shrink-0 rounded-full bg-zinc-300" />
-              <Drawer.Title className="text-xl font-medium	">
-                {location}
-              </Drawer.Title>
-              <br />
-              <Drawer.Description>{children}</Drawer.Description>
+              <div className="mx-auto mb-4 h-1.5 w-12 flex-shrink-0 overflow-auto rounded-full bg-zinc-300" />
+              <div className="mx-auto flex w-full max-w-md flex-col overflow-auto rounded-t-[10px] p-4">
+                <Drawer.Title className="text-xl font-medium	">
+                  {location}
+                </Drawer.Title>
+                <br />
+                <Drawer.Description>{children}</Drawer.Description>
+              </div>
             </div>
           </Drawer.NestedRoot>
         </Drawer.Content>
