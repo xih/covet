@@ -13,6 +13,7 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { BottomSheetProps } from "./BottomSheet";
 import { useRouter } from "next/router";
+import PropertyOwnerCard from "./PropertyOwnerCard";
 
 export type SheetContentProps = {
   location?: string;
@@ -33,76 +34,36 @@ export default function SheetContent(props: SheetContentProps) {
     }`,
   );
 
+  const grantees = grantee?.split(",");
+  const grantors = grantor?.split(",");
+
   return (
     <div>
       <div className="flex flex-col gap-y-1 text-slate-700">
-        Current Owner:{" "}
-        <span className="flex flex-wrap gap-x-2 gap-y-1.5 font-medium text-slate-900">
-          {grantee?.split(",").map((name) => (
-            <p key={name} className="">
-              <TooltipProvider>
-                <Tooltip delayDuration={200}>
-                  <TooltipTrigger asChild>
-                    <Link
-                      href={`https://www.google.com/search?q=${encodeURIComponent(
-                        name,
-                      )}`}
-                      target="_blank"
-                      onClick={() => {
-                        mixpanel.track("searched on google", {
-                          type: "grantee",
-                          name: name,
-                        });
-                      }}
-                    >
-                      <Badge variant="secondary">
-                        <span className="flex text-sm">{name}</span>
-                      </Badge>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Search on Google</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </p>
+        <span className="text-base">
+          {" "}
+          {grantees && grantees?.length > 1
+            ? `${grantees?.length} Current Owners:`
+            : "Current Owner:"}{" "}
+        </span>
+        <span className="flex flex-wrap gap-x-2 gap-y-2 font-medium text-slate-900">
+          {grantees?.map((name) => (
+            <PropertyOwnerCard name={name} key={name} />
           ))}
         </span>
       </div>
       <br />
       <div className="flex flex-col gap-y-1">
-        <span className="gap-y-0.5 text-slate-700">Previous Owner: </span>
+        <span className="gap-y-0.5 text-slate-700">
+          <span className="text-base">
+            {grantors && grantors?.length > 1
+              ? `${grantors?.length} Previous Owners:`
+              : "Previous Owner:"}{" "}
+          </span>
+        </span>
         <div className="flex flex-wrap gap-x-2 gap-y-1.5 font-medium text-slate-900">
           {grantor?.split(",").map((name) => {
-            return (
-              <div key={name}>
-                <TooltipProvider>
-                  <Tooltip delayDuration={200}>
-                    <TooltipTrigger asChild>
-                      <Link
-                        href={`https://www.google.com/search?q=${encodeURIComponent(
-                          name,
-                        )}`}
-                        target="_blank"
-                        onClick={() => {
-                          mixpanel.track("searched on google", {
-                            type: "grantor",
-                            name: name,
-                          });
-                        }}
-                      >
-                        <Badge variant="secondary">
-                          <span className="flex text-sm">{name}</span>
-                        </Badge>
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Search on Google</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            );
+            return <PropertyOwnerCard name={name} key={name} />;
           })}
         </div>
       </div>

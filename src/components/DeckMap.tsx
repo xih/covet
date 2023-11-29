@@ -29,6 +29,7 @@ import {
 } from "~/components/ui/command";
 import { cleanString, toTitleCase } from "~/lib/utils";
 import BottomSheet from "./BottomSheet";
+import { BottomSheet2 } from "./BottomSheet2";
 import SheetContent from "./SheetContent";
 
 type DataPoint = {
@@ -411,7 +412,7 @@ export default function DeckMap() {
             />
           </Modal>
         ) : (
-          <BottomSheet
+          <BottomSheet2
             open={!!selectedPointData}
             onClose={() => {
               setSelectedIndex(null);
@@ -427,7 +428,7 @@ export default function DeckMap() {
               grantee={selectedPointData?.grantee}
               grantor={selectedPointData?.grantor}
             />
-          </BottomSheet>
+          </BottomSheet2>
         )}
       </DeckGL>
       <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
