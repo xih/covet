@@ -431,7 +431,7 @@ export default function DeckMap() {
           </BottomSheet2>
         )}
       </DeckGL>
-      <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
+      <div className="fixed z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
         <Image src={PostCovetLogo as string} alt="postcovet" />
         <Command
           shouldFilter={false}
@@ -462,7 +462,7 @@ export default function DeckMap() {
           </CommandList>
         </Command>
       </div>
-      <div className="absolute bottom-0 left-0 z-0 w-full p-4">
+      <div className="fixed bottom-0 left-0 z-0 w-full p-4">
         <Button
           variant="secondary"
           onClick={() => {
