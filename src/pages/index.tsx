@@ -46,9 +46,11 @@ const useMediaQuery = (width: number) => {
 
 const LoadingView = () => {
   const isBreakpoint = useMediaQuery(800);
+  const { isFirstTimeVisit } = useMapStore();
+
   return (
     <div className="bg-black">
-      {isBreakpoint ? <OnboardingDrawer /> : null}
+      {isBreakpoint && isFirstTimeVisit ? <OnboardingDrawer /> : null}
       <div className="flex h-screen items-center justify-center">
         <div className="h-16 w-16 animate-spin rounded-full border-t-4 border-solid border-red-500"></div>
       </div>
@@ -68,6 +70,8 @@ export default function Home() {
     track_pageview: true,
     persistence: "localStorage",
   });
+
+  const { isFirstTimeVisit, markVisited } = useMapStore();
 
   const addressCounter = useMapStore((state) => state.addressCounter);
 
@@ -90,14 +94,22 @@ export default function Home() {
     }
   }, [signIn?.status, user]);
 
+  // Mark the first time that a user has been to this site!
+  useEffect(() => {
+    if (isFirstTimeVisit) {
+      // Mark the user as visited to prevent showing the component again
+      markVisited();
+    }
+  }, [isFirstTimeVisit, markVisited]);
+
   return (
     <>
       <main className="">
         <DeckMap />
         <div className="fixed bottom-4 right-4">
-          {/* code below gets an error on desktop. server side rendered code is different */}
+          {/* Help button */}
           {isBreakpoint ? (
-            <OnboardingDrawer showButton={true} />
+            <OnboardingDrawer showButton={true} openState={isFirstTimeVisit} />
           ) : (
             <AlertDialogDemo />
           )}

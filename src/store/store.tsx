@@ -4,6 +4,8 @@ import { persist, createJSONStorage } from "zustand/middleware";
 interface MapState {
   addressCounter: number;
   increaseAddressCounter: (by: number) => void;
+  isFirstTimeVisit: boolean;
+  markVisited: () => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -12,6 +14,8 @@ export const useMapStore = create<MapState>()(
       addressCounter: 0,
       increaseAddressCounter: () =>
         set((state) => ({ addressCounter: state.addressCounter + 1 })),
+      isFirstTimeVisit: true,
+      markVisited: () => set({ isFirstTimeVisit: false }),
     }),
     {
       name: "map-clicks-storage",
