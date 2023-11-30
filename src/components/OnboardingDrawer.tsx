@@ -50,7 +50,7 @@ export default function OnboardingDrawer({
               <div className="mx-auto flex max-w-md justify-end gap-6">
                 <a
                   className="gap-0.25 flex items-center text-xs text-zinc-600"
-                  href="https://twitter.com/emilkowalski_"
+                  href="https://twitter.com/postcovet"
                   target="_blank"
                 >
                   Twitter
