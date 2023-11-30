@@ -1,22 +1,22 @@
 import React from "react";
-import { useState } from "react";
 import { Drawer } from "vaul";
 import { Button } from "./ui/button";
 
-export default function OnboardingDrawer({
-  showButton = false,
-  openState = true,
-}) {
-  const [open, setOpen] = useState(openState);
+type HelpBottomSheetProps = {
+  open: boolean;
+  setOpen: (_: boolean) => void;
+};
 
+export default function HelpBottomSheet({
+  open,
+  setOpen,
+}: HelpBottomSheetProps) {
   return (
     <div>
       <Drawer.Root dismissible={false} open={open}>
-        {showButton ? (
-          <Drawer.Trigger asChild onClick={() => setOpen(true)}>
-            <Button variant="secondary">Help</Button>
-          </Drawer.Trigger>
-        ) : null}
+        <Drawer.Trigger asChild onClick={() => setOpen(true)}>
+          <Button variant="secondary">Help</Button>
+        </Drawer.Trigger>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 bg-black/40" />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 mt-24 flex flex-col rounded-t-[10px] bg-zinc-100">
@@ -58,9 +58,9 @@ export default function OnboardingDrawer({
                     fill="none"
                     height="16"
                     stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
                     viewBox="0 0 24 24"
                     width="16"
                     aria-hidden="true"
