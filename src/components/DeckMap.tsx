@@ -27,7 +27,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "~/components/ui/command";
-import { cleanString, toTitleCase } from "~/lib/utils";
+import { cleanString, toTitleCase, useMediaQuery } from "~/lib/utils";
 import BottomSheet from "./BottomSheet";
 import SheetContent from "./SheetContent";
 
@@ -124,6 +124,17 @@ export default function DeckMap() {
       });
     }
   }
+
+  const isMobile = useMediaQuery(800);
+  const { isFirstTimeVisit, markVisited } = useMapStore();
+
+  // Mark the first time that a user has been to this site!
+  useEffect(() => {
+    if (isFirstTimeVisit) {
+      // Mark the user as visited to prevent showing the component again
+      markVisited();
+    }
+  }, [isFirstTimeVisit, markVisited]);
 
   const data = useMemo(() => {
     if (!debouncedSearchValue) {

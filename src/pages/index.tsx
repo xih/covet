@@ -13,44 +13,15 @@ import { useCallback, useEffect, useState } from "react";
 import { UserButton, SignInButton, useUser, useSignIn } from "@clerk/nextjs";
 import { env } from "process";
 import OnboardingDrawer from "~/components/OnboardingDrawer";
-
-// useMediaQuery is from here:
-//https://github.com/vercel/next.js/discussions/14810#discussioncomment-61177
-const useMediaQuery = (width: number) => {
-  const [targetReached, setTargetReached] = useState(false);
-
-  const updateTarget = useCallback((e: MediaQueryListEvent) => {
-    if (e.matches) {
-      setTargetReached(true);
-    } else {
-      setTargetReached(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const media = window.matchMedia(`(max-width: ${width}px)`);
-    media.addEventListener("change", updateTarget);
-
-    // Check on mount (callback is not called until a change occurs)
-    if (media.matches) {
-      setTargetReached(true);
-    }
-
-    return () => {
-      media.removeEventListener("change", updateTarget);
-    };
-  }, [width, updateTarget]);
-
-  return targetReached;
-};
+import { useMediaQuery } from "~/lib/utils";
 
 const LoadingView = () => {
-  const isBreakpoint = useMediaQuery(800);
+  const isMobile = useMediaQuery(800);
   const { isFirstTimeVisit } = useMapStore();
 
   return (
     <div className="bg-black">
-      {isBreakpoint && isFirstTimeVisit ? <OnboardingDrawer /> : null}
+      {isMobile && isFirstTimeVisit ? <OnboardingDrawer /> : null}
       <div className="flex h-screen items-center justify-center">
         <div className="h-16 w-16 animate-spin rounded-full border-t-4 border-solid border-red-500"></div>
       </div>
@@ -93,14 +64,6 @@ export default function Home() {
       });
     }
   }, [signIn?.status, user]);
-
-  // Mark the first time that a user has been to this site!
-  useEffect(() => {
-    if (isFirstTimeVisit) {
-      // Mark the user as visited to prevent showing the component again
-      markVisited();
-    }
-  }, [isFirstTimeVisit, markVisited]);
 
   return (
     <>
