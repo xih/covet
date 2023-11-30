@@ -14,6 +14,7 @@ import { Button } from "~/components/ui/button";
 import { BottomSheetProps } from "./BottomSheet";
 import { useRouter } from "next/router";
 import PropertyOwnerCard from "./PropertyOwnerCard";
+import { Card } from "./ui/card";
 
 export type SheetContentProps = {
   location?: string;
@@ -46,11 +47,13 @@ export default function SheetContent(props: SheetContentProps) {
             ? `${grantees?.length} Current Owners:`
             : "Current Owner:"}{" "}
         </span>
-        <span className="flex flex-wrap gap-x-2 gap-y-2 font-medium text-slate-900">
+        {/* <span className="flex flex-wrap gap-x-2 gap-y-2 font-medium text-slate-900"> */}
+        <Card className="p-2 py-0">
           {grantees?.map((name) => (
             <PropertyOwnerCard name={name} key={name} />
           ))}
-        </span>
+        </Card>
+        {/* </span> */}
       </div>
       <br />
       <div className="flex flex-col gap-y-1">

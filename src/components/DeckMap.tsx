@@ -412,7 +412,7 @@ export default function DeckMap() {
             />
           </Modal>
         ) : (
-          <BottomSheet2
+          <BottomSheet
             open={!!selectedPointData}
             onClose={() => {
               setSelectedIndex(null);
@@ -428,7 +428,7 @@ export default function DeckMap() {
               grantee={selectedPointData?.grantee}
               grantor={selectedPointData?.grantor}
             />
-          </BottomSheet2>
+          </BottomSheet>
         )}
       </DeckGL>
       <div className="fixed z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
