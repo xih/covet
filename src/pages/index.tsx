@@ -1,27 +1,18 @@
-import { signIn, signOut, useSession } from "next-auth/react";
-import Head from "next/head";
-import Link from "next/link";
-import { api } from "~/utils/api";
 import dynamic from "next/dynamic";
-import KeplerMap from "~/components/KeplerMap";
 import mixpanel from "mixpanel-browser";
 import { AlertDialogDemo } from "~/shadcn/components/AlertDialogDemo";
 import { Button } from "~/components/ui/button";
-import UserAuth from "~/components/ui/UserAuth";
 import { useMapStore } from "~/store/store";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { UserButton, SignInButton, useUser, useSignIn } from "@clerk/nextjs";
 import { env } from "process";
-import OnboardingDrawer from "~/components/OnboardingDrawer";
+import OnboardingDrawer from "~/components/OnboardingBottomSheet";
 import { useMediaQuery } from "~/lib/utils";
+import HelpBottomSheet from "~/components/HelpBottomSheet";
 
 const LoadingView = () => {
-  const isMobile = useMediaQuery(800);
-  const { isFirstTimeVisit } = useMapStore();
-
   return (
     <div className="bg-black">
-      {isMobile && isFirstTimeVisit ? <OnboardingDrawer /> : null}
       <div className="flex h-screen items-center justify-center">
         <div className="h-16 w-16 animate-spin rounded-full border-t-4 border-solid border-red-500"></div>
       </div>
@@ -42,14 +33,13 @@ export default function Home() {
     persistence: "localStorage",
   });
 
-  const { isFirstTimeVisit, markVisited } = useMapStore();
-
-  const addressCounter = useMapStore((state) => state.addressCounter);
-
   const { isSignedIn, user, isLoaded } = useUser();
   const { signIn } = useSignIn();
 
-  const isBreakpoint = useMediaQuery(800);
+  const useIsMobile = () => useMediaQuery(800);
+  const [openHelpBottomSheet, setHelpBottomSheetOpen] = useState(false);
+  const { isFirstTimeVisit } = useMapStore();
+  const [_, setOnboardingDrawerOpen] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -68,11 +58,20 @@ export default function Home() {
   return (
     <>
       <main className="">
+        {useIsMobile() && isFirstTimeVisit ? (
+          <OnboardingDrawer
+            open={isFirstTimeVisit}
+            setOpen={setOnboardingDrawerOpen}
+          />
+        ) : null}
         <DeckMap />
         <div className="fixed bottom-4 right-4">
           {/* Help button */}
-          {isBreakpoint ? (
-            <OnboardingDrawer showButton={true} openState={isFirstTimeVisit} />
+          {useIsMobile() ? (
+            <HelpBottomSheet
+              open={openHelpBottomSheet}
+              setOpen={setHelpBottomSheetOpen}
+            />
           ) : (
             <AlertDialogDemo />
           )}

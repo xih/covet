@@ -44,15 +44,12 @@ export function cleanString(input: string): string {
 
 // useMediaQuery is from here:
 //https://github.com/vercel/next.js/discussions/14810#discussioncomment-61177
+// export const useMediaQuery = (width: number) => {
 export const useMediaQuery = (width: number) => {
   const [targetReached, setTargetReached] = useState(false);
 
   const updateTarget = useCallback((e: MediaQueryListEvent) => {
-    if (e.matches) {
-      setTargetReached(true);
-    } else {
-      setTargetReached(false);
-    }
+    setTargetReached(e.matches);
   }, []);
 
   useEffect(() => {
