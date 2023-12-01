@@ -42,9 +42,7 @@ export default function BottomSheet(
                   {location && titleCase(location.toLowerCase())}
                 </Drawer.Title>
                 <br />
-                <Drawer.Description className="max-h-screen overflow-y-scroll">
-                  {children}
-                </Drawer.Description>
+                <Drawer.Description>{children}</Drawer.Description>
                 <Drawer.Close />
               </div>
             </div>
