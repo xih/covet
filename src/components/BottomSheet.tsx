@@ -1,18 +1,7 @@
 import React, { useState } from "react";
 import { Drawer } from "vaul";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
-
-import { Button } from "~/components/ui/button";
-import Link from "next/link";
-import mixpanel from "mixpanel-browser";
-import { Badge } from "./ui/badge";
-
 import { useRouter } from "next/router";
+// import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area";
 
 export type BottomSheetProps = {
   open: boolean;
@@ -33,18 +22,6 @@ export default function BottomSheet(
   const { open, onClose, location, grantee, grantor, children } = props;
   const [snap, setSnap] = useState<number | string | null>("148px");
 
-  const router = useRouter();
-
-  const browserURL = router.asPath;
-
-  const domain = "https://postcovet.com";
-
-  const textMessage = encodeURIComponent(
-    `👋 Want to purchase this home? Check out who owns this home near me: ${
-      domain + router.asPath
-    }`,
-  );
-
   return (
     <Drawer.Root
       open={open}
@@ -54,18 +31,25 @@ export default function BottomSheet(
       activeSnapPoint={snap}
       setActiveSnapPoint={setSnap}
       closeThreshold={0.1}
+      fadeFromIndex={1}
     >
       <Drawer.Portal>
         <Drawer.Content className="border-b-none fixed bottom-0 left-0 right-0 mx-[-1px] flex h-full max-h-[97%] flex-col rounded-t-[10px] border border-gray-200 bg-white">
           <Drawer.NestedRoot>
             <div className="flex-1 rounded-t-[10px] bg-white p-4">
               <div className="mx-auto mb-4 h-1.5 w-12 flex-shrink-0 overflow-auto rounded-full bg-zinc-300" />
-              <div className="mx-auto flex w-full max-w-md flex-col  rounded-t-[10px] p-4">
+              <div className="mx-auto flex w-full max-w-md flex-col rounded-t-[10px]">
                 <Drawer.Title className="text-xl font-medium">
                   {location && titleCase(location.toLowerCase())}
                 </Drawer.Title>
                 <br />
-                <Drawer.Description>{children}</Drawer.Description>
+                <Drawer.Description>
+                  {/* <ScrollArea className="h-72 w-fit"> */}
+                  {children}
+                  {/* <ScrollBar orientation="vertical" /> */}
+                  {/* </ScrollArea> */}
+                </Drawer.Description>
+                <Drawer.Close />
               </div>
             </div>
           </Drawer.NestedRoot>

@@ -52,13 +52,10 @@ export default function PropertyOwnerCard({
   name,
   ...props
 }: PropertyOwnerCard) {
-  console.log("name", name.toLowerCase());
-  console.log("title", titleCase(name.toLowerCase()));
-
   const dorkingString = "filetype:pdf OR filetype:xlsx OR filetype:docx";
   return (
     <CardContent className="grid overflow-hidden px-0 py-0">
-      <div className="flex items-center justify-between space-x-4 overflow-hidden rounded-md px-4 py-2 transition-all hover:bg-accent hover:text-accent-foreground">
+      <div className="flex items-center justify-between space-x-2 overflow-hidden rounded-md py-2  pl-4 pr-2 transition-all hover:bg-accent hover:text-accent-foreground">
         <div className="space-y-1">
           <p className="text-sm font-medium leading-none">
             {titleCase(name.toLowerCase())}
