@@ -15,6 +15,7 @@ import { BottomSheetProps } from "./BottomSheet";
 import { useRouter } from "next/router";
 import PropertyOwnerCard from "./PropertyOwnerCard";
 import { Card } from "./ui/card";
+import RealEstateMarketplaceCard from "./RealEstateMarketplaceCard";
 
 export type SheetContentProps = {
   location?: string;
@@ -47,13 +48,11 @@ export default function SheetContent(props: SheetContentProps) {
             ? `${grantees?.length} Current Owners:`
             : "Current Owner:"}{" "}
         </span>
-        {/* <span className="flex flex-wrap gap-x-2 gap-y-2 font-medium text-slate-900"> */}
-        <Card className="p-2 py-0">
+        <Card className="mb-2 w-full py-0">
           {grantees?.map((name) => (
             <PropertyOwnerCard name={name} key={name} />
           ))}
         </Card>
-        {/* </span> */}
       </div>
       <br />
       <div className="flex flex-col gap-y-1">
@@ -65,91 +64,17 @@ export default function SheetContent(props: SheetContentProps) {
           </span>
         </span>
         <div className="flex flex-wrap gap-x-2 gap-y-1.5 font-medium text-slate-900">
-          {grantor?.split(",").map((name) => {
-            return <PropertyOwnerCard name={name} key={name} />;
-          })}
+          <Card className="mb-2 w-full py-0">
+            {grantor?.split(",").map((name) => {
+              return <PropertyOwnerCard name={name} key={name} />;
+            })}
+          </Card>
         </div>
       </div>
       <br />
       <div className="flex flex-col gap-y-1">
         <p className="text-slate-800">Find on:</p>
-        <div className="flex flex-wrap justify-start gap-1">
-          <div className="flex grow flex-row gap-1">
-            <Link
-              href={`https://www.google.com/search?q=${encodeURIComponent(
-                "zillow " + location + " san francisco",
-              )}`}
-              target="_blank"
-              onClick={() => {
-                mixpanel.track("searched address", {
-                  type: "zillow",
-                  address: location,
-                });
-              }}
-            >
-              <Button variant="outline" className="grow">
-                Zillow
-              </Button>
-            </Link>
-
-            <Link
-              href={`https://www.google.com/search?q=${encodeURIComponent(
-                "trulia " + location + " san francisco",
-              )}`}
-              target="_blank"
-              onClick={() => {
-                mixpanel.track("searched address", {
-                  type: "trulia",
-                  address: location,
-                });
-              }}
-            >
-              <Button variant="outline">Trulia</Button>
-            </Link>
-            <Link
-              href={`https://www.google.com/search?q=${encodeURIComponent(
-                "redfin " + location + " san francisco",
-              )}`}
-              target="_blank"
-              onClick={() => {
-                mixpanel.track("searched address", {
-                  type: "redfin",
-                  address: location,
-                });
-              }}
-            >
-              <Button variant="outline">Redfin</Button>
-            </Link>
-            <Link
-              href={`https://www.google.com/search?q=${encodeURIComponent(
-                "compass " + location + " san francisco",
-              )}`}
-              target="_blank"
-              onClick={() => {
-                mixpanel.track("searched address", {
-                  type: "compass",
-                  address: location,
-                });
-              }}
-            >
-              <Button variant="outline">Compass</Button>
-            </Link>
-          </div>
-          <Link
-            href={`https://maps.google.com/?q=${encodeURIComponent(
-              location + " san francisco",
-            )}`}
-            target="_blank"
-            onClick={() => {
-              mixpanel.track("searched address", {
-                type: "google maps",
-                address: location,
-              });
-            }}
-          >
-            <Button variant="outline">Google Maps</Button>
-          </Link>
-        </div>
+        <RealEstateMarketplaceCard location={location} />
       </div>
       <br />
       <div>

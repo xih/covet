@@ -57,9 +57,8 @@ export default function PropertyOwnerCard({
 
   const dorkingString = "filetype:pdf OR filetype:xlsx OR filetype:docx";
   return (
-    <CardContent className="grid gap-1 overflow-hidden px-1">
-      <div className="-mx-2 flex items-center justify-between space-x-4 overflow-hidden rounded-md p-2 py-4 transition-all hover:bg-accent hover:text-accent-foreground">
-        {/* <BellIcon className="mt-px h-5 w-5" /> */}
+    <CardContent className="grid overflow-hidden px-0 py-0">
+      <div className="flex items-center justify-between space-x-4 overflow-hidden rounded-md px-4 py-2 transition-all hover:bg-accent hover:text-accent-foreground">
         <div className="space-y-1">
           <p className="text-sm font-medium leading-none">
             {titleCase(name.toLowerCase())}
@@ -70,7 +69,7 @@ export default function PropertyOwnerCard({
         </div>
         <div className="flex flex-row items-end justify-end gap-x-1">
           <Button
-            variant="secondary"
+            variant="outline"
             className="text-xs"
             onClick={() => {
               const encodedName = encodeURIComponent('"' + name + '"');
@@ -81,7 +80,7 @@ export default function PropertyOwnerCard({
             Search
           </Button>
           <Button
-            variant="secondary"
+            variant="outline"
             className="text-xs"
             onClick={() => {
               const encodedName = encodeURIComponent(
@@ -96,46 +95,5 @@ export default function PropertyOwnerCard({
         </div>
       </div>
     </CardContent>
-    // <div>PropertyOwnerCard</div>;
-    // <Card className={cn("w-full ")} {...props}>
-    //   <CardHeader className="px-4 pb-2">
-    //     <CardTitle className="text-lg">
-    //       {titleCase(name.toLowerCase())}
-    //     </CardTitle>
-    //   </CardHeader>
-    //   <CardContent className="grid px-4 pt-0">
-    //     <div className="flex flex-row gap-2">
-    //       <Button
-    //         variant="secondary"
-    //         className="text-xs"
-    //         onClick={() => {
-    //           const encodedName = encodeURIComponent('"' + name + '"');
-    //           const searchUrl = `https://www.google.com/search?q=${encodedName}`;
-    //           window.open(searchUrl, "_blank");
-    //         }}
-    //       >
-    //         Google Search
-    //       </Button>
-    //       <Button
-    //         variant="secondary"
-    //         className="text-xs"
-    //         onClick={() => {
-    //           const encodedName = encodeURIComponent(
-    //             '"' + name + '"' + " " + dorkingString,
-    //           );
-    //           const searchUrl = `https://www.google.com/search?q=${encodedName}`;
-    //           window.open(searchUrl, "_blank");
-    //         }}
-    //       >
-    //         Advanced Search
-    //       </Button>
-    //     </div>
-    //   </CardContent>
-    //   {/* <CardFooter> */}
-    //   {/* <Button className="w-full">
-    //       <Check className="mr-2 h-4 w-4" /> Mark all as read
-    //     </Button> */}
-    //   {/* </CardFooter> */}
-    // </Card>
   );
 }

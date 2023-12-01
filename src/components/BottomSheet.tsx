@@ -25,6 +25,7 @@ export type BottomSheetProps = {
 };
 
 import type { PropsWithChildren } from "react";
+import { titleCase } from "title-case";
 
 export default function BottomSheet(
   props: BottomSheetProps & PropsWithChildren,
@@ -49,18 +50,19 @@ export default function BottomSheet(
       open={open}
       onClose={onClose}
       modal={false}
-      snapPoints={[0.3, 0.6, 0.95]}
+      snapPoints={[0.45, 0.95]}
       activeSnapPoint={snap}
       setActiveSnapPoint={setSnap}
+      closeThreshold={0.1}
     >
       <Drawer.Portal>
         <Drawer.Content className="border-b-none fixed bottom-0 left-0 right-0 mx-[-1px] flex h-full max-h-[97%] flex-col rounded-t-[10px] border border-gray-200 bg-white">
           <Drawer.NestedRoot>
             <div className="flex-1 rounded-t-[10px] bg-white p-4">
               <div className="mx-auto mb-4 h-1.5 w-12 flex-shrink-0 overflow-auto rounded-full bg-zinc-300" />
-              <div className="mx-auto flex w-full max-w-md flex-col overflow-auto rounded-t-[10px] p-4">
-                <Drawer.Title className="text-xl font-medium	">
-                  {location}
+              <div className="mx-auto flex w-full max-w-md flex-col  rounded-t-[10px] p-4">
+                <Drawer.Title className="text-xl font-medium">
+                  {location && titleCase(location.toLowerCase())}
                 </Drawer.Title>
                 <br />
                 <Drawer.Description>{children}</Drawer.Description>
