@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import PropertyOwnerCard from "./PropertyOwnerCard";
 import { Card } from "./ui/card";
 import RealEstateMarketplaceCard from "./RealEstateMarketplaceCard";
+import { titleCase } from "title-case";
 
 export type SheetContentProps = {
   location?: string;
@@ -22,8 +23,12 @@ export default function SheetContent(props: SheetContentProps) {
 
   const router = useRouter();
 
+  const locationString = location
+    ? `${titleCase(location.toLowerCase())}`
+    : "this home";
+
   const textMessage = encodeURIComponent(
-    `👋 Want to purchase this home? Check out who owns this home near me: ${
+    `👋 Want to purchase this home? Check out who owns ${locationString}! ${
       domain + router.asPath
     }`,
   );
