@@ -29,7 +29,6 @@ import {
 } from "~/components/ui/command";
 import { cleanString, toTitleCase, useMediaQuery } from "~/lib/utils";
 import BottomSheet from "./BottomSheet";
-import { BottomSheet2 } from "./BottomSheet2";
 import SheetContent from "./SheetContent";
 
 type DataPoint = {

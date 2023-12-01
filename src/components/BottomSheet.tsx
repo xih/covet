@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Drawer } from "vaul";
 import { useRouter } from "next/router";
-// import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area";
 
 export type BottomSheetProps = {
   open: boolean;
@@ -43,11 +42,8 @@ export default function BottomSheet(
                   {location && titleCase(location.toLowerCase())}
                 </Drawer.Title>
                 <br />
-                <Drawer.Description>
-                  {/* <ScrollArea className="h-72 w-fit"> */}
+                <Drawer.Description className="max-h-screen overflow-y-scroll">
                   {children}
-                  {/* <ScrollBar orientation="vertical" /> */}
-                  {/* </ScrollArea> */}
                 </Drawer.Description>
                 <Drawer.Close />
               </div>
