@@ -11,6 +11,7 @@ import {
 
 import "~/styles/globals.css";
 import Head from "next/head";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 const title = "PostCovet";
 const description =
@@ -40,10 +41,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <meta name="twitter:image" content={image} />
         <title>{title}</title>
         <link rel="icon" href="/covet-favicon2.ico" />
-        <link
-          href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css"
-          rel="stylesheet"
-        />
       </Head>
       <ClerkProvider {...pageProps}>
         <Component {...pageProps} />
