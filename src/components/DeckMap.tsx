@@ -45,9 +45,10 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "~/components/ui/command";
-import { cleanString, toTitleCase } from "~/lib/utils";
+import { cleanString, toTitleCase, useMediaQuery } from "~/lib/utils";
 import BottomSheet from "./BottomSheet";
 import SheetContent from "./SheetContent";
+import { env } from "process";
 
 type DataPoint = {
   block: number;
@@ -246,9 +247,6 @@ export default function DeckMap() {
         return;
       }
 
-      console.log("9999. viewState", viewState);
-
-      console.log("map", mapRef);
       mapRef.current?.flyTo({
         center: [point.lon, point.lat],
         // maxDuration: 2000,
@@ -266,7 +264,6 @@ export default function DeckMap() {
     (evt: ViewStateChangeEvent) => {
       const { viewState } = evt;
 
-      console.log("111.", viewState);
       if (evt.type === "move") {
         setViewState({ ...viewState, transitionDuration: 1000 });
         return;
@@ -275,7 +272,6 @@ export default function DeckMap() {
       if (typeof selectedIndex === "number" && selectedIndex > -1) {
         const point = cleanedData[selectedIndex];
         if (!point) {
-          console.log("0. what is clicked here", point);
           setViewState({ ...viewState, transitionDuration: 1 });
           return;
         }
@@ -330,7 +326,6 @@ export default function DeckMap() {
                 onSelect={() => {
                   setSearchValue(toTitleCase(entry.prettyLocation));
                   setSelectedIndex(entry.id);
-                  console.log(entry);
                 }}
               >
                 <div className="flex items-center">
@@ -402,7 +397,11 @@ export default function DeckMap() {
   return (
     <>
       <Map
-        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+        mapboxAccessToken={
+          process.env.NODE_ENV === "development"
+            ? process.env.NEXT_PUBLIC_LOCAL_MAPBOX_TOKEN
+            : process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+        }
         mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         {...viewState}
         ref={mapRef}
@@ -431,7 +430,6 @@ export default function DeckMap() {
           onClick={(data) => {
             setSuggestionsVisible(false);
             if (!data.layer) {
-              console.log("setting to null 215");
               setSelectedIndex(null);
               return;
             }
@@ -537,7 +535,7 @@ export default function DeckMap() {
           </CommandList>
         </Command>
       </div>
-      <div className="absolute bottom-0 left-0 z-0 w-full p-4">
+      <div className="fixed bottom-0 left-0 z-0 w-full p-4">
         <Button
           variant="secondary"
           onClick={() => {

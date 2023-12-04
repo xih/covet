@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
+import { useCallback, useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -40,3 +41,30 @@ export function toTitleCase(input: string): string {
 export function cleanString(input: string): string {
   return input.replace(/[.,]/g, "");
 }
+
+// useMediaQuery is from here:
+//https://github.com/vercel/next.js/discussions/14810#discussioncomment-61177
+// export const useMediaQuery = (width: number) => {
+export const useMediaQuery = (width: number) => {
+  const [targetReached, setTargetReached] = useState(false);
+
+  const updateTarget = useCallback((e: MediaQueryListEvent) => {
+    setTargetReached(e.matches);
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia(`(max-width: ${width}px)`);
+    media.addEventListener("change", updateTarget);
+
+    // Check on mount (callback is not called until a change occurs)
+    if (media.matches) {
+      setTargetReached(true);
+    }
+
+    return () => {
+      media.removeEventListener("change", updateTarget);
+    };
+  }, [width, updateTarget]);
+
+  return targetReached;
+};
