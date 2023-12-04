@@ -1,5 +1,18 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import Map, { MapRef } from "react-map-gl";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Map, {
+  GeolocateControl,
+  useMap,
+  MapRef,
+  NavigationControl,
+  ViewStateChangeEvent,
+  useControl,
+} from "react-map-gl";
 import DeckGL from "@deck.gl/react/typed";
 import mixpanel from "mixpanel-browser";
 import { ScatterplotLayer } from "@deck.gl/layers/typed";
@@ -8,6 +21,8 @@ import { Modal } from "~/shadcn/components/Modal";
 import PostCovetLogo from "/public/Post-Covet_LOGO_SVG.svg";
 import Image from "next/image";
 import { useMapStore } from "~/store/store";
+// import {Map, } from 'react-map-gl';
+
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
 import { useDebounce } from "~/lib/hooks";
@@ -15,6 +30,9 @@ import { Button } from "./ui/button";
 import { Moon, Map as LucideMap, Plus, Home, TrendingUp } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Drawer } from "vaul";
+import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox/typed";
+import { DeckProps, PickingInfo } from "@deck.gl/core/typed";
+import { ArcLayer } from "@deck.gl/layers/typed";
 
 import {
   Command,
@@ -30,6 +48,7 @@ import {
 import { cleanString, toTitleCase, useMediaQuery } from "~/lib/utils";
 import BottomSheet from "./BottomSheet";
 import SheetContent from "./SheetContent";
+import { env } from "process";
 
 type DataPoint = {
   block: number;
@@ -74,6 +93,16 @@ const slate300 = [203, 213, 225];
 const suggestionListIDs = [16500, 19054, 26754];
 const suggestionListData = suggestionListIDs.map((id) => cleanedData[id]!);
 
+function DeckGLOverlay(
+  props: MapboxOverlayProps & {
+    interleaved?: boolean;
+  },
+) {
+  const overlay = useControl<MapboxOverlay>(() => new MapboxOverlay(props));
+  overlay.setProps(props);
+  return null;
+}
+
 export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
   const router = useRouter();
@@ -97,6 +126,12 @@ export default function DeckMap() {
   );
   const nextIndex = useRef<null | number>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // for react-map-gl: FLYTO interpolate
+  // const { current: map } = useMap();
+
+  // const mapRef = useRef();
+  const mapRef = useRef<MapRef>(null);
 
   useEffect(() => {
     if (!drawerOpen && typeof nextIndex.current === "number") {
@@ -166,8 +201,8 @@ export default function DeckMap() {
           : data.length > 10000
           ? 10
           : data.length > 100
-          ? 20
-          : 50,
+          ? 11
+          : 12,
       radiusMinPixels: 1,
       radiusMaxPixels: 100,
       lineWidthMinPixels: 0,
@@ -199,6 +234,11 @@ export default function DeckMap() {
   }, [data, isSatelliteMapStyle, selectedIndex]);
 
   const layers = [ScatterPlayLayer];
+  const geolocateStyle: React.CSSProperties = {
+    marginRight: "1.3em",
+    marginBottom: "10em",
+    zIndex: 1,
+  };
 
   useEffect(() => {
     if (typeof selectedIndex === "number" && selectedIndex > -1) {
@@ -207,17 +247,38 @@ export default function DeckMap() {
         return;
       }
 
-      setViewState((prev) => {
-        return {
-          ...prev,
-          latitude: point.lat,
-          longitude: point.lon,
-          zoom: 17,
-          transitionDuration: 1000,
-        };
+      mapRef.current?.flyTo({
+        center: [point.lon, point.lat],
+        // maxDuration: 2000,
+        speed: 1.2,
+        zoom: 17,
+        curve: 1.42,
+        easing(t) {
+          return t;
+        },
       });
     }
-  }, [selectedIndex, data]);
+  }, [selectedIndex, data, viewState]);
+
+  const onUserInput = useCallback(
+    (evt: ViewStateChangeEvent) => {
+      const { viewState } = evt;
+
+      if (evt.type === "move") {
+        setViewState({ ...viewState, transitionDuration: 1000 });
+        return;
+      }
+
+      if (typeof selectedIndex === "number" && selectedIndex > -1) {
+        const point = cleanedData[selectedIndex];
+        if (!point) {
+          setViewState({ ...viewState, transitionDuration: 1 });
+          return;
+        }
+      }
+    },
+    [selectedIndex],
+  );
 
   function getSearchSuggestions() {
     function getSuggestionFooter() {
@@ -265,7 +326,6 @@ export default function DeckMap() {
                 onSelect={() => {
                   setSearchValue(toTitleCase(entry.prettyLocation));
                   setSelectedIndex(entry.id);
-                  console.log(entry);
                 }}
               >
                 <div className="flex items-center">
@@ -336,62 +396,76 @@ export default function DeckMap() {
 
   return (
     <>
-      <DeckGL
-        initialViewState={viewState}
+      <Map
+        mapboxAccessToken={
+          process.env.NODE_ENV === "development"
+            ? process.env.NEXT_PUBLIC_LOCAL_MAPBOX_TOKEN
+            : process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+        }
+        mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
+        {...viewState}
+        ref={mapRef}
+        onMove={onUserInput}
         style={{
           height: "100vh",
           width: "100vw",
           position: "fixed",
           overflow: "hidden",
         }}
-        getTooltip={({ object }: { object?: DataPoint | null }) => {
-          return object
-            ? {
-                text: `Property Location: ${object.prettyLocation.toUpperCase()}
-              Grantor: ${object.grantor}
-              Grantee: ${object.grantee}`,
-              }
-            : null;
-        }}
-        controller={true}
-        layers={layers}
-        onClick={(data) => {
-          setSuggestionsVisible(false);
-          if (!data.layer) {
-            console.log("setting to null 215");
-            setSelectedIndex(null);
-            return;
-          }
-
-          if (data.index === -1) {
-            return;
-          }
-          const pointMetaData = data.object as DataPoint;
-
-          if (addressCounter > 4 && !isSignedIn) {
-            void router.replace("/sign-in");
-            return;
-          } else {
-            increaseAddressCounter(1);
-          }
-
-          mixpanel.track("click address", {
-            "Property name": pointMetaData?.propertyLocation,
-            Grantor: pointMetaData?.grantor,
-            Grantee: pointMetaData?.grantee,
-          });
-          if (!drawerOpen) {
-            setSelectedIndex(pointMetaData.id);
-          } else {
-            nextIndex.current = pointMetaData.id;
-          }
-          return;
-        }}
       >
-        <Map
-          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
+        <DeckGLOverlay
+          interleaved={true}
+          getTooltip={({ object }: { object?: DataPoint | null }) => {
+            if (object?.prettyLocation) {
+              return {
+                text: `Property Location: ${object.prettyLocation.toUpperCase()}
+            Grantor: ${object.grantor}
+            Grantee: ${object.grantee}`,
+              };
+            } else {
+              return null;
+            }
+          }}
+          layers={layers}
+          onClick={(data) => {
+            setSuggestionsVisible(false);
+            if (!data.layer) {
+              setSelectedIndex(null);
+              return;
+            }
+
+            if (data.index === -1) {
+              return;
+            }
+            const pointMetaData = data.object as DataPoint;
+
+            if (addressCounter > 4 && !isSignedIn) {
+              void router.replace("/sign-in");
+              return;
+            } else {
+              increaseAddressCounter(1);
+            }
+
+            mixpanel.track("click address", {
+              "Property name": pointMetaData?.propertyLocation,
+              Grantor: pointMetaData?.grantor,
+              Grantee: pointMetaData?.grantee,
+            });
+            if (!drawerOpen) {
+              setSelectedIndex(pointMetaData.id);
+            } else {
+              nextIndex.current = pointMetaData.id;
+            }
+            return;
+          }}
         />
+        <GeolocateControl
+          style={geolocateStyle}
+          positionOptions={{ enableHighAccuracy: true }}
+          trackUserLocation={true}
+          position="bottom-right"
+        />
+
         {window.innerWidth > 800 ? (
           <Modal
             location={selectedPointData?.propertyLocation}
@@ -429,8 +503,8 @@ export default function DeckMap() {
             />
           </BottomSheet>
         )}
-      </DeckGL>
-      <div className="fixed z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
+      </Map>
+      <div className="absolute z-0 flex w-full flex-col items-start gap-x-8 gap-y-2 p-4 sm:flex-row md:p-8">
         <Image src={PostCovetLogo as string} alt="postcovet" />
         <Command
           shouldFilter={false}

@@ -11,6 +11,7 @@ import {
 
 import "~/styles/globals.css";
 import Head from "next/head";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 const title = "PostCovet";
 const description =
