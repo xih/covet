@@ -5,10 +5,10 @@ import { Button } from "~/components/ui/button";
 import { useMapStore } from "~/store/store";
 import { useEffect, useState } from "react";
 import { UserButton, SignInButton, useUser, useSignIn } from "@clerk/nextjs";
-import { env } from "process";
 import OnboardingDrawer from "~/components/OnboardingBottomSheet";
 import { useMediaQuery } from "~/lib/utils";
 import HelpBottomSheet from "~/components/HelpBottomSheet";
+import { env } from "~/env.mjs";
 
 const LoadingView = () => {
   return (
@@ -26,9 +26,10 @@ const DeckMap = dynamic(() => import("~/components/DeckMap"), {
 });
 
 export default function Home() {
-  mixpanel.init(process.env.NEXT_PUBLIC_MIXPANEL_TOKEN!, {
-    debug: env.development ? true : false,
-    // debug: true,
+  const isDevelopmentEnv = process.env.NODE_ENV === "development";
+
+  mixpanel.init(env.NEXT_PUBLIC_MIXPANEL_TOKEN, {
+    debug: isDevelopmentEnv ? true : false,
     track_pageview: true,
     persistence: "localStorage",
   });

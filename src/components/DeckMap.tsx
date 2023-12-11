@@ -15,6 +15,8 @@ import { Button } from "./ui/button";
 import { Moon, Map as LucideMap, Plus, Home, TrendingUp } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Drawer } from "vaul";
+import { env } from "~/env.mjs";
+import { titleCase } from "title-case";
 
 import {
   Command,
@@ -345,13 +347,26 @@ export default function DeckMap() {
           overflow: "hidden",
         }}
         getTooltip={({ object }: { object?: DataPoint | null }) => {
-          return object
-            ? {
-                text: `Property Location: ${object.prettyLocation.toUpperCase()}
-              Grantor: ${object.grantor}
-              Grantee: ${object.grantee}`,
-              }
-            : null;
+          if (object) {
+            const currentOwners = object.grantor?.split(",");
+            const previousOwners = object.grantee?.split(",");
+
+            const currentOwnersPrettyPrint = currentOwners
+              .map((owner) => titleCase(owner.toLowerCase()))
+              .join(", ");
+
+            const previousOwnersPrettyPrint = previousOwners
+              .map((owner) => titleCase(owner.toLowerCase()))
+              .join(", ");
+
+            return {
+              text: `Property Location: ${object.prettyLocation.toUpperCase()}
+            Current Owner: ${currentOwnersPrettyPrint}
+            Previous Owner: ${previousOwnersPrettyPrint}`,
+            };
+          } else {
+            return null;
+          }
         }}
         controller={true}
         layers={layers}
@@ -389,7 +404,7 @@ export default function DeckMap() {
         }}
       >
         <Map
-          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+          mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
           mapStyle={isSatelliteMapStyle ? satelliteMapStyle : darkMapStyle}
         />
         {window.innerWidth > 800 ? (
