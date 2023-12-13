@@ -34,19 +34,10 @@ export const trackSignInEvent = (email: string) => {
 };
 
 export const registerUser = (name: string, email: string) => {
-  console.log("does registerUser fire");
   mixpanel.register({
     Name: name,
     Email: email,
   });
-  console.log(
-    "User registered with properties:",
-    mixpanel.get_property("Email"),
-  );
-  console.log(
-    "User registered with properties:",
-    mixpanel.get_property("Name"),
-  );
 };
 
 export const clickedAddress = (
