@@ -32,6 +32,7 @@ import {
 import { cleanString, toTitleCase, useMediaQuery } from "~/lib/utils";
 import BottomSheet from "./BottomSheet";
 import SheetContent from "./SheetContent";
+import { clickedAddress } from "services/mixpanel";
 
 type DataPoint = {
   block: number;
@@ -390,11 +391,14 @@ export default function DeckMap() {
             increaseAddressCounter(1);
           }
 
-          mixpanel.track("click address", {
-            "Property name": pointMetaData?.propertyLocation,
-            Grantor: pointMetaData?.grantor,
-            Grantee: pointMetaData?.grantee,
-          });
+          // TODO: clean up the address here so it's nice title case
+          // the other way to do it, is before on the data level.
+          clickedAddress(
+            pointMetaData?.propertyLocation,
+            pointMetaData?.grantor,
+            pointMetaData?.grantee,
+          );
+
           if (!drawerOpen) {
             setSelectedIndex(pointMetaData.id);
           } else {

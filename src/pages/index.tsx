@@ -9,6 +9,12 @@ import OnboardingDrawer from "~/components/OnboardingBottomSheet";
 import { useMediaQuery } from "~/lib/utils";
 import HelpBottomSheet from "~/components/HelpBottomSheet";
 import { env } from "~/env.mjs";
+import {
+  identifyUser,
+  initMixpanel,
+  registerUser,
+  testMixpanel,
+} from "services/mixpanel";
 
 const LoadingView = () => {
   return (
@@ -26,13 +32,7 @@ const DeckMap = dynamic(() => import("~/components/DeckMap"), {
 });
 
 export default function Home() {
-  const isDevelopmentEnv = process.env.NODE_ENV === "development";
-
-  mixpanel.init(env.NEXT_PUBLIC_MIXPANEL_TOKEN, {
-    debug: isDevelopmentEnv ? true : false,
-    track_pageview: true,
-    persistence: "localStorage",
-  });
+  initMixpanel();
 
   const { isSignedIn, user, isLoaded } = useUser();
   const { signIn } = useSignIn();
@@ -44,17 +44,14 @@ export default function Home() {
 
   useEffect(() => {
     if (user) {
-      mixpanel.identify(user.id);
-      mixpanel.register({
-        Email: user.primaryEmailAddress?.emailAddress,
-      });
-      mixpanel.people.set({
-        // Email: user.primaryEmailAddress?.emailAddress,
-        name: user.fullName,
-        createdAt: new Date().toISOString(),
-      });
+      identifyUser(user.id);
+      const email = user.primaryEmailAddress?.emailAddress;
+      const fullName = user.fullName;
+      if (email && fullName) {
+        registerUser(fullName, email);
+      }
     }
-  }, [signIn?.status, user]);
+  }, [user]);
 
   return (
     <>
