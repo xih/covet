@@ -15,6 +15,7 @@ import {
   registerUser,
   testMixpanel,
 } from "services/mixpanel";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 const LoadingView = () => {
   return (

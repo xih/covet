@@ -33,6 +33,7 @@ export const env = createEnv({
     // DISCORD_CLIENT_SECRET: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
+    // GOOGLE_3D_API: z.string(),
   },
 
   /**
@@ -44,6 +45,7 @@ export const env = createEnv({
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
     NEXT_PUBLIC_MAPBOX_TOKEN: z.string().min(1),
     NEXT_PUBLIC_MIXPANEL_TOKEN: z.string().min(1),
+    NEXT_PUBLIC_GOOGLE_3D_API: z.string().min(1),
   },
 
   /**
@@ -61,6 +63,7 @@ export const env = createEnv({
     // DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    NEXT_PUBLIC_GOOGLE_3D_API: process.env.NEXT_PUBLIC_GOOGLE_3D_API,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

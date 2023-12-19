@@ -34,7 +34,8 @@
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
     "csv-parse": "^5.5.2",
-    "deck.gl": "^8.9.30",
+    "d3-scale": "^4.0.2",
+    "deck.gl": "^8.9.33",
     "envalid": "^8.0.0",
     "lucide-react": "^0.279.0",
     "mapbox-gl": "^2.15.0",
@@ -54,6 +55,7 @@
     "zustand": "^4.4.4"
   },
   "devDependencies": {
+    "@types/d3-scale": "^4.0.8",
     "@types/eslint": "^8.44.2",
     "@types/mixpanel-browser": "^2.47.3",
     "@types/node": "^18.16.0",
