@@ -77,6 +77,28 @@ const slate300 = [203, 213, 225];
 const suggestionListIDs = [16500, 19054, 26754];
 const suggestionListData = suggestionListIDs.map((id) => cleanedData[id]!);
 
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function getChunk(cleanedData: DataPoint[], start: number, end: number) {
+  await delay(1000);
+  const chunk = cleanedData.slice(start, end);
+}
+
+// TODO: Handle incremental data loading
+async function* getData() {
+  const numberOfChunks = 10;
+  const chunkSize = Math.ceil(cleanedData.length / numberOfChunks);
+
+  for (let i = 0; i < numberOfChunks; i++) {
+    const start = i * chunkSize + 1;
+    const end = Math.min((i + 1) * chunkSize, cleanedData.length);
+    const chunk = await getChunk(cleanedData, start, end);
+    yield chunk;
+  }
+}
+
 export default function DeckMap() {
   const [searchValue, setSearchValue] = useState("");
   const router = useRouter();
@@ -374,7 +396,6 @@ export default function DeckMap() {
         onClick={(data) => {
           setSuggestionsVisible(false);
           if (!data.layer) {
-            console.log("setting to null 215");
             setSelectedIndex(null);
             return;
           }
